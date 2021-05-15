@@ -621,7 +621,7 @@ class DictionaryLearningMRI(sp.app.App):
 
         self.alg = sp.alg.AltMin(min_ksvd, min_mri, max_iter=self.max_iter)
 
-     def _summarize(self):
+    def _summarize(self):
         if self.show_pbar:
             xp = self.device.xp
             self.residuals.append(self.objective_values[-1])
