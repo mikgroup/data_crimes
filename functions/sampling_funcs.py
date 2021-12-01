@@ -1,13 +1,15 @@
 """
-This module includes functions for creating sampling patters using either variable-density sampling
- or Poisson Disc Sampling for 2D Cartesian data.
-The Variable Density functions are based on Miki Lustig's Sparse MRI toolbox.
+This module includes functions for creating sampling patters using a variable-density sampling scheme
+for 2D Cartesian data. It is based on Miki Lustig's Sparse MRI Matlab toolbox (2007).
+
+In VD scheme, the polynomial degree that controls the Probability Density Function (PDF) can be modified
+to create "weak VD" or "strong VD" sampling patterns. Here we hard-coded polynomial degree values for R=2,4,6...
+for both sampling schemes. You can change them to fit your data size, and also add new values.
 
 Efrat Shimron (UC Berkeley, 2021).
 """
 
 import numpy as np
-# from functions.sampling_funcs import genPDF,genSampling
 import matplotlib.pyplot as plt
 
 
@@ -29,7 +31,7 @@ def genPDF(imSize, p, pctg, distType=2, radius=0, disp=0, pdf_show_flag=0):
     # val - min sampling density
 
     # (c) Michael Lustig (2007)
-    # (c) Efrat Shimron (2020) (converted from Matlab to python)
+    # (c) Efrat Shimron (2021) - converted from Matlab to python
 
     minval = 0
     maxval = 1
@@ -106,7 +108,7 @@ def genSampling(pdf, iter, tol, calib=[1, 1]):
     #  mask - sampling pattern
 
     # (c) Michael Lustig (2007)
-    # (c) Efrat Shimron (2020) (converted from Matlab to python)
+    # (c) Efrat Shimron (2020) - converted from Matlab to python
 
     pdf[pdf > 1] = 1
     K = np.sum(pdf[::])
