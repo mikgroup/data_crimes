@@ -30,8 +30,7 @@ def genPDF(imSize, p, pctg, distType=2, radius=0, disp=0, pdf_show_flag=0):
     # pdf - the pdf
     # val - min sampling density
 
-    # (c) Michael Lustig (2007)
-    # (c) Efrat Shimron (2021) - converted from Matlab to python
+    # (c) Michael Lustig 2007. Converted from Matlab to Python by Efrat Shimron (2020)
 
     minval = 0
     maxval = 1
@@ -95,6 +94,7 @@ def genPDF(imSize, p, pctg, distType=2, radius=0, disp=0, pdf_show_flag=0):
 
 ############### genSampling  ###########################
 
+
 def genSampling(pdf, iter, tol, calib=[1, 1]):
     #  A monte-carlo algorithm to generate a sampling pattern with
     #  minimum peak interference. The number of samples will be
@@ -107,8 +107,10 @@ def genSampling(pdf, iter, tol, calib=[1, 1]):
     # Outputs:
     #  mask - sampling pattern
 
-    # (c) Michael Lustig (2007)
-    # (c) Efrat Shimron (2020) - converted from Matlab to python
+    # (c) Michael Lustig 2007.
+    # Converted from Matlab to Python by Efrat Shimron (2020)
+
+    # print('calib=', calib)
 
     pdf[pdf > 1] = 1
     K = np.sum(pdf[::])
@@ -161,7 +163,7 @@ def genSampling(pdf, iter, tol, calib=[1, 1]):
 
 
 ###################################################################################################
-#                         2D var-dens sampling
+#                                             2D var-dens (from 1c_MoDL_OLD_1D_sampling run10)
 ###################################################################################################
 def gen_2D_var_dens_mask(R, imSize, sampling_flag, calib=[24, 24]):
     NX = imSize[0]
@@ -183,7 +185,12 @@ def gen_2D_var_dens_mask(R, imSize, sampling_flag, calib=[24, 24]):
         poly_degree = 'NaN'
 
     else:
-        if R == 8:
+        if R == 12:
+            if sampling_flag == 'weak':
+                poly_degree = 15
+            elif sampling_flag == 'strong':
+                poly_degree = 9
+        elif R == 8:
             if sampling_flag == 'weak':
                 poly_degree = 12
             elif sampling_flag == 'strong':
@@ -203,6 +210,11 @@ def gen_2D_var_dens_mask(R, imSize, sampling_flag, calib=[24, 24]):
                 poly_degree = 7
             elif sampling_flag == 'strong':
                 poly_degree = 3
+        elif R == 3:
+            if sampling_flag == 'weak':
+                poly_degree = 7
+            elif sampling_flag == 'strong':
+                poly_degree = 2
         elif R == 2:
             if sampling_flag == 'weak':
                 poly_degree = 7
@@ -216,9 +228,7 @@ def gen_2D_var_dens_mask(R, imSize, sampling_flag, calib=[24, 24]):
     return mask, pdf, poly_degree
 
 
-# # ---------------------- Example: how to generate a 2D var-dens mask ------------------------------
-# Run this code separately
-
+# # ---------------------- 2D var-dens example & display ------------------------------
 # NY = 256
 # NX = 128
 #
@@ -262,7 +272,7 @@ def gen_2D_var_dens_mask(R, imSize, sampling_flag, calib=[24, 24]):
 
 
 ###################################################################################################
-#                           1D var-dens
+#                                             1D var-dens (from 1c_MoDL_OLD_1D_sampling run10)
 ###################################################################################################
 def gen_1D_var_dens_mask(R, imSize, sampling_flag, calib=[24, 24]):
     NX = imSize[0]
@@ -292,8 +302,8 @@ def gen_1D_var_dens_mask(R, imSize, sampling_flag, calib=[24, 24]):
     elif R == 5:
         if sampling_flag == 'weak':
             poly_degree = 5
-        elif sampling_flag == 'strong':
-            poly_degree = 5
+        # elif sampling_flag == 'strong':
+        # TODO: implement this
     elif R == 4:
         if sampling_flag == 'weak':
             poly_degree = 10
@@ -317,4 +327,3 @@ def gen_1D_var_dens_mask(R, imSize, sampling_flag, calib=[24, 24]):
     mask = np.repeat(mask_1D, NY, 0)
 
     return mask, pdf, poly_degree
-

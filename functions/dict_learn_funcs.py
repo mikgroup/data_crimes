@@ -1,18 +1,24 @@
-'''
-This module includes functions for MRI reconstruction using Dictionary Learning.
+# This code implements an MRI reconstruction algorithm based on dictionary learning.
+# The dictionary is initialized using the zero-filled k-space data, and is then learned directly from the under-sampled
+# data in an iterative optimization. Notice that the reconstruction algorithm uses only the undersampled k-space data
+# from a single images, i.e. it does not have access to fully-sampled examples and/or k-space data of other images.
 
-It is based on Jon Tamir's tutorial:
-"MRI Reconstruction using Learned Dictionaries" ISMRM 2020 Educational Session.
-and associated code:
-https://github.com/utcsilab/dictionary_learning_ismrm_2020
+# The code is based on Jon Tamir's tutorial:
+# "MRI Reconstruction using Learned Dictionaries" ISMRM 2020 Educational Session.
+# https://github.com/utcsilab/dictionary_learning_ismrm_2020
+# In the current code the dictionary is adapted to varying filter sizes, such that the image size
+# does not need to be a multiplication of the filter size (which is usually 8x8).
 
-(c) Jon Tamir, 2020
+# The reconstruction algorithm is based on this paper:
+# S Ravishankar, Y Bresler, MR Image Reconstruction From Highly Undersampled k- Space Data by Dictionary Learning,
+# IEEE Transactions on Medical Imaging, vol. 30, no.5, pp. 1028-1041, May 2011.
 
-'''
+# (c) Efrat Shimron (UC Berkeley) & Jon Tamir (UT Austin) 2021
 
 import numpy as np
 import sigpy as sp
 from sigpy.mri.linop import Sense
+import matplotlib.pyplot as plt
 
 
 def omp_single(yi, D, num_nonzero_coeffs=3, use_sigpy=False, device=None):
@@ -55,7 +61,7 @@ def omp_single(yi, D, num_nonzero_coeffs=3, use_sigpy=False, device=None):
 
 
 class OMP(sp.alg.Alg):
-    """Orthogonal Matching Pursuit (OMP) algorithm for a batch of data.
+    r"""Orthogonal Matching Pursuit (OMP) algorithm for a batch of data.
     Each iteration of the algorithm processes the next data point, for
     a total of L iterations
     Args:
@@ -527,19 +533,53 @@ class DictionaryLearningMRI(sp.app.App):
         mask_op = sp.linop.Multiply(self.ksp.shape, self.mask)
         self.mri_op = mask_op * fft_sense_op
 
-        block_op = sp.linop.BlocksToArray(self.img_shape, self.block_shape, self.block_strides)
+        # check if the image shape divides perfectly (without residual) by the block shape, in all dimensions:
+        if ((self.img_shape[0] % self.block_shape[0])==0) & ((self.img_shape[1] % self.block_shape[1])==0):
+            self.im_pad_flag = False
+        else:
+            self.im_pad_flag = True
+
+        if self.im_pad_flag==False:
+            # if the image shape is a multiplication of the block shape in all dimensions:
+            block_op = sp.linop.BlocksToArray(self.img_shape, self.block_shape, self.block_strides)
+        else:
+            # If the image shape is NOT a multiplication of the block shape, we will zero-pad the image slightly
+            # such that the new image size will be a multiplication of the block shape.
+            # we will do the following:  zero-pad in image space --> reshape image to blocks --> compute dictionary etc.
+            #                            --> reshape blocks to image --> crop back to original size
+            # Note that this zero-padding is done in the image-domain and it is removed (cropped) before going to k-space,
+            # so it does not affect the k-space sampling or the subtle crime effect.
+
+            # find the target image shape
+            new_size_dim0 = int(self.block_shape[0] * (np.ceil(self.img_shape[0] / self.block_shape[0])))
+            new_size_dim1 = int(self.block_shape[1] * (np.ceil(self.img_shape[1] / self.block_shape[1])))
+
+            self.new_img_shape = np.array((new_size_dim0, new_size_dim1))
+
+            # create the image-domain zero-padding operator:
+            pad_op = sp.linop.Resize(self.new_img_shape, self.img_shape)
+
+            # add this operator to the chain of operators, before the blocks are extracted from the image:
+            block_op = sp.linop.BlocksToArray(self.new_img_shape, self.block_shape, self.block_strides)
+            # Note: we do not need to create the cropping operator because it is implemented by the adjoin of pad_op.
+
+
+
 
         self.img_blocks_shape = block_op.ishape
 
         self.num_data = np.prod(self.img_blocks_shape[:2])
         self.num_points = np.prod(self.img_blocks_shape[2:])
 
-        print('num_data:', self.num_data)
-        print('num_points:', self.num_points)
-
         reshape_op = sp.linop.Reshape(block_op.ishape, (self.num_data, self.num_points))
 
-        self.reshape_block_op = block_op * reshape_op
+        if self.im_pad_flag == False:
+            self.reshape_block_op = block_op * reshape_op
+        elif self.im_pad_flag == True:
+            # add zero-padding in the image domain before extracting blocks from the image
+            #self.reshape_block_op = block_op  * reshape_op * pad_op
+            self.reshape_block_op = pad_op.H * block_op * reshape_op
+
 
         self.L_shape = (self.num_points, self.num_filters)
         self.R_shape = (self.num_filters, self.num_data)
@@ -547,7 +587,6 @@ class DictionaryLearningMRI(sp.app.App):
 
         self.forward_op = self.mri_op * self.reshape_block_op
 
-    #         print(self.forward_op.oshape, self.forward_op.ishape)
 
     def _get_vars(self):
         xp = self.device.xp
@@ -556,16 +595,21 @@ class DictionaryLearningMRI(sp.app.App):
             self.img_adjoint = self.mri_op.H * self.ksp
             self.img_blocks_flat = (self.forward_op.H * self.ksp).T
 
-            # print(self.img_blocks_flat.shape)
+            #             print(self.img_blocks_flat.shape)
 
             self.A = xp.zeros((self.num_filters, self.num_data), dtype=self.dtype)
             self.D = xp.zeros((self.num_points, self.num_filters), dtype=self.dtype)
+
             self.block_scale_factor = self.reshape_block_op * self.reshape_block_op.H * xp.ones(self.img_shape,
-                                                                                                dtype=self.dtype)
+                                                                                                     dtype=self.dtype)
 
             if self.img_ref is not None:
                 self.img_ref = self.reshape_block_op * self.reshape_block_op.H * self.img_ref
-                self.img_ref /= self.block_scale_factor
+                #self.img_ref /= self.block_scale_factor
+                nonzero_inds = np.argwhere(self.block_scale_factor != 0)
+                self.img_ref[nonzero_inds] /= self.block_scale_factor[nonzero_inds]
+
+
 
             img_mask = xp.array(abs(self.img_adjoint) > .1 * max(abs(self.img_adjoint.ravel())), dtype=self.dtype)
 
@@ -574,7 +618,7 @@ class DictionaryLearningMRI(sp.app.App):
             count = xp.sum(img_mask_blocks, axis=-1)
             self.block_idx = count > 1
 
-    # print(self.img_blocks_flat.shape, self.block_idx.shape)
+    #             print(self.img_blocks_flat.shape, self.block_idx.shape)
 
     def _get_alg(self):
 
@@ -605,7 +649,9 @@ class DictionaryLearningMRI(sp.app.App):
         def min_mri():
             img = self.D.dot(self.A)
             img = self.reshape_block_op * img.T
-            img /= self.block_scale_factor
+            #img /= self.block_scale_factor
+            nonzero_inds = np.argwhere(self.block_scale_factor != 0)
+            img[nonzero_inds] /= self.block_scale_factor[nonzero_inds]
 
             app = sp.app.LinearLeastSquares(self.mri_op,
                                             self.ksp,
@@ -621,29 +667,15 @@ class DictionaryLearningMRI(sp.app.App):
 
         self.alg = sp.alg.AltMin(min_ksvd, min_mri, max_iter=self.max_iter)
 
+    #             self._x =
+    #             A_fun = lambda x: x
+    #             B_fun = lambda z: -z
+    #             self.alg = sp.alg.ADMM(min_mri, min_ksvd, self._x, self._z, self._u, A_fun, B_fun, c)
+
     def _summarize(self):
         if self.show_pbar:
             xp = self.device.xp
             self.residuals.append(self.objective_values[-1])
-
-            # if self.img_ref is None:
-            #     val = self.residuals[-1]
-            #     self.pbar.set_postfix(resid='{0:.2E}'.format(val))
-            # else:
-            #     # calc nrmse
-            #     val = nrmse(self.img_ref, self.img_out)
-            #     self.nrmse_vals.append(val)
-            #
-            #
-            #     # calc SSIM
-            #     err = error_metrics(np.abs(self.img_ref), np.abs(self.img_out))
-            #     err.calc_SSIM()
-            #     self.SSIM_vals.append(err.SSIM)
-            #
-            #     print('nrmse = {} SSIM={}'.format(val,err.SSIM))
-            #
-            #     # dispaly wait bar + nrmse + SSIM
-            #     #self.pbar.set_postfix(nrmse='{0:.2E} SSIM={0:.2E}'.format(val, err.SSIM))
 
     def _output(self):
         return self.D, self.A, self.img_out
