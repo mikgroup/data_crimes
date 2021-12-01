@@ -4,7 +4,7 @@ A public repository for reproducing the experiments described in the paper:
 ""
 
 
-![subtle_fig_1](logo_4github.png)
+![subtle_fig_1](logo_arXiv_paper.png)
 
 
 Shimron et al. "Subtle data crimes: naively training machine learning algorithms could lead to overly-optimistic results" (2021).
