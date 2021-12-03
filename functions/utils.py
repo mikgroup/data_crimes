@@ -67,11 +67,11 @@ def merge_multicoil_data(ksp_slice_all_coils):
     return mag_im
 
 
-# ---------------------------------------------------------------------
-
-
 def zpad_merge_scale(ksp_block_multicoil, pad_ratio):
-    ''' inputs:
+    ''' This script takes in multi-coil k-space data, applies zero-padding with a factor equal to pad_ratio
+        (e.g. 2x, 3x), and then merges the multi-coil images into a single magnitude image.
+
+        inputs:
         kspace - numpy array of size [Ncoils, NX, NY]
         pad_ratio - numpy array (scalar) that denotes the desired padding ratio
         '''

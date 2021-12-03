@@ -1,7 +1,14 @@
+"""
+This module includes functions for computing image quality metrics:
+Normalized Root Mean Square Error (NRMSE) and Structural Similarity Index (SSIM).
+
+Efrat Shimron (UC Berkeley, 2021).
+"""
+
 import numpy as np
 from SSIM_PIL import compare_ssim
 from PIL import Image
-# E. Shimron, 2021
+
 
 class error_metrics:
     def __init__(self,I_true,I_pred):
