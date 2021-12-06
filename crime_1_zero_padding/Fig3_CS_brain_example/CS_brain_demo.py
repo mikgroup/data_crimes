@@ -1,5 +1,4 @@
 # This script creates the example shown in Figure 3 in the Subtle Data Crimes paper.
-#
 # (c) Efrat Shimron, UC Berkeley, 2021.
 
 
@@ -8,21 +7,13 @@ import numpy as np
 import h5py
 import sys
 
-# add path to functions library - when running on mikQNAP
-sys.path.append("/mikQNAP/efrat/1_inverse_crimes/1_mirror_PyCharm_CS_MoDL_merged/SubtleCrimesRepo/")
-
 import matplotlib.pyplot as plt
-from PIL import Image
 
 import sigpy as sp
 from sigpy import mri as mr
 from functions.error_funcs import error_metrics
 from functions.sampling_funcs import gen_2D_var_dens_mask
 from functions.utils import zpad_merge_scale
-
-
-from optparse import OptionParser
-import argparse
 
 sys.path.append("/home/efrat/anaconda3/")
 sys.path.append("/home/efrat/anaconda3/lib/python3.7/site-packages/")  # path to sigpy
@@ -37,43 +28,15 @@ sampling_flag = '2D'
 
 lamda=0.005
 
+### Experiment set-up
 
-#################################################################################
-## Experiment set-up
-#################################################################################
-exp_flag = 'fast'  #fast or full experiment (fast takes a few minutes on a CPU, long experiment takes a few hours)
-#exp_flag = 'long'
+num_slices = 1
+R_vec = np.array([6])
+pad_ratio_vec = np.array([1,2,3])  # Define the desired padding ratios
+num_realizations = 1  # number of sampling masks that will be generated for each case
+data_filename = 'fast_exp_results_R{}'.format(R_vec[0])  # filename for saving
 
-# set parameters
-if exp_flag=='fast':
-    num_slices = 1
-    R_vec = np.array([6])
-    pad_ratio_vec = np.array([1,2,3])  # Define the desired padding ratios
-    #pad_ratio_vec = np.array([1,])
-    num_realizations = 1  # number of sampling masks that will be generated for each case
-    data_filename = 'fast_exp_results_R{}'.format(R_vec[0])
-
-elif exp_flag=='long':
-    num_slices = 10
-    R_vec = np.array([6])
-    pad_ratio_vec = np.array([1, 2, 3])  # Define tpoly_degree_veche desired padding ratios
-    num_realizations = 3  # number of sampling masks that will be generated for each case
-    data_filename = 'long_exp_results_R{}'.format(R_vec[0])
-
-
-############################################ load data   ######################################################
-# print('loading brain slices...')
-#
-# #TODO: find this image and make it reproducible.
-# slice_i = 0
-# filename = "../../../data/1c_brain_fastMRI_preprocessed/134_{}.npy".format(slice_i)
-#
-# kspace_orig_multicoil = np.load(filename)
-#
-# print(kspace_orig_multicoil.shape)
-#
-
-############### load from h5 ##################
+#### load data
 example_filename = '../brain_data/file_brain_AXT2_207_2070504.h5'
 f = h5py.File(example_filename, "r")
 kspace_orig_multicoil = f["kspace"]
@@ -82,12 +45,11 @@ slice_i = 0
 kspace_orig_multicoil  = kspace_orig_multicoil [slice_i,:,::2,:]  # reduce FOV in image domain
 
 
-############################################ experiments  ######################################################
+#### experiments
 CS_recs_dict = {}
 masks_dict = {}
 CS_NRMSE_arr = np.zeros((pad_ratio_vec.shape[0],sampling_type_vec.shape[0]))
-#R_eff_arr = {}
-#masks_effective_dict = {}
+
 
 for pad_i in range(pad_ratio_vec.shape[0]):
     pad_ratio = pad_ratio_vec[pad_i]
@@ -98,46 +60,13 @@ for pad_i in range(pad_ratio_vec.shape[0]):
     im_mag_scaled = zpad_merge_scale(kspace_orig_multicoil, pad_ratio)
     im_mag_scaled = np.rot90(im_mag_scaled,2)
 
-    # # prer fig for paper
-    # for coil_i in range(4):
-    #     ksp_coil1 = kspace_orig_multicoil[coil_i,:,:].squeeze()
-    #     fig = plt.figure()
-    #     plt.imshow(np.log(np.abs(ksp_coil1)),cmap="gray")
-    #     plt.axis('off')
-    #     plt.show()
-    #     figname = 'ksp_coil{}.png'.format((coil_i+1))
-    #     fig.savefig(figname)
-    #
-    #
-    #     im_coil1 = sp.ifft(kspace_orig_multicoil[coil_i,:,:].squeeze())
-    #     fig = plt.figure()
-    #     plt.imshow(np.abs(im_coil1),cmap="gray")
-    #     plt.axis('off')
-    #     plt.show()
-    #     figname = 'im_coil{}.png'.format((coil_i+1))
-    #     fig.savefig(figname)
-
-
-    ################### go back to k-space #####################
-
-    # kspace_slice = sp.fft(im_mag_scaled, axes=(1, 2))
+    ## go back to k-space
     kspace_slice = sp.fft(im_mag_scaled)
 
-    # fig = plt.figure()
-    # plt.imshow(np.log(np.abs(kspace_slice)),cmap="gray")
-    # plt.axis('off')
-    # plt.show()
-    # fig.savefig('kspace_artificial.png')
-
-    # normalize kspace
-    #kspace_slice = kspace_slice / np.max(np.abs(kspace_slice))
     NX = kspace_slice.shape[0]
     NY = kspace_slice.shape[1]
 
     # ------- run recon experiment -----------------
-    # gold standard recon (fully-sampled data, with the current zero padding length)
-    print('Gold standard rec from fully sampled data...')
-
     rec_gold = sp.ifft(kspace_slice)
 
     if pad_i == 0:
@@ -256,6 +185,7 @@ for pad_i in range(pad_ratio_vec.shape[0]):
 
         # # ###################################### CS rec  ################################################
 
+        # add the coil dimension for compatibility with Sigpy's requirements
         mask_expanded = np.expand_dims(mask, axis=0)  # add the empty coils
         ksp_padded_sampled_expanded = np.expand_dims(ksp_padded_sampled, axis=0)
         virtual_sens_maps = np.ones_like(
@@ -299,31 +229,10 @@ for pad_i in range(pad_ratio_vec.shape[0]):
         # fig.savefig(figname)
 
 # save results
-np.savez(data_filename,rec_gold = rec_gold,CS_NRMSE_arr=CS_NRMSE_arr,R_vec=R_vec,sampling_type_vec=sampling_type_vec,pad_ratio_vec = pad_ratio_vec)
-
-# TODO - fix the code that saves dictionaries,  right now it saves empty arrays
-# np.save('gold_dict.npy',gold_dict)
-np.save("CS_recs_dict.npy",CS_recs_dict)
-np.save("masks_dict.npy",masks_dict)
-
-#
-# ######################################################### display ###########################################################
-
-# calibrate the zoom-in coordinates (manually)
-# s1 = int(0.12 * im.shape[0])
-# s2 = int(0.3 * im.shape[1])
-# s3 = int(0.44*im.shape[0])
-# s4 = int(0.62*im.shape[1])
-#
-# im4plot = im[s1:s3, s2:s4]
-# print(im4plot.shape)
-#
-# fig = plt.figure()
-# plt.imshow(im4plot,cmap="gray")
-# plt.show()
+#np.savez(data_filename,rec_gold = rec_gold,CS_NRMSE_arr=CS_NRMSE_arr,R_vec=R_vec,sampling_type_vec=sampling_type_vec,pad_ratio_vec = pad_ratio_vec)
 
 
-########################## display full-FOV image + white zoom-in square ##############################
+### display full-FOV image + white zoom-in square
 
 # display full-FOV gold image in subplot [1,0]
 im_full_FOV = np.abs(rec_gold_original_size)
@@ -345,10 +254,7 @@ plt.show()
 fig.savefig('brain_gold_full_FOV')
 
 
-
-
-
-###############################################################################################
+### display recons + NRMSEs in subplots 
 fig, ax = plt.subplots(nrows=(sampling_type_vec.shape[0]), ncols=(pad_ratio_vec.shape[0] + 2),
                        figsize=(20, 10),subplot_kw={'aspect': 1})
 fig.subplots_adjust(bottom=0, top=1,left=0, right=1)
@@ -373,18 +279,6 @@ rec_gold_zoomed = np.abs(rec_gold_original_size[s1:s3, s2:s4])
 ax[0][0].imshow(rec_gold_zoomed,cmap="gray")
 ax[0][0].set_axis_off()
 row_cnt = 0
-
-# # display full-FOV gold image in subplot [1,0]
-#
-# ax[1][0].imshow(im_full_FOV,cmap="gray")
-# ax[1][0].set_axis_off()
-# # add yellow box
-# gca= ax[1][0]
-# linewidth =3
-# gca.plot([s2,s4],[s1,s1], color="yellow",linewidth=linewidth)
-# gca.plot([s2,s4],[s3,s3], color="yellow",linewidth=linewidth)
-# gca.plot([s2,s2],[s1,s3], color="yellow",linewidth=linewidth)
-# gca.plot([s4,s4],[s1,s3], color="yellow",linewidth=linewidth)
 
 
 # display recons (zoomed-in)
@@ -440,17 +334,8 @@ for j in range(sampling_type_vec.shape[0]):
 
 plt.subplots_adjust(wspace=0.05, hspace=0)
 plt.axis('off')
-
 fig.delaxes(ax[1, 0])  # remove empty axes
-#fig.delaxes(ax[2, 0])  # remove empty axes
 plt.show()
+#fig.savefig(fname='brain_zpad_exp_R{}.png'.format(R))
 
-fig.savefig(fname='brain_zpad_exp_R{}.png'.format(R))
-
-
-###################################################################################################3
-#                    display each image + NRMSE separately (for ppt)
-########################################################################################################
-
-print('')
 
