@@ -1,20 +1,19 @@
-# This code demonstrates subtle crime I with Compressed sensing
-# Then run the script CS_DL_knee_prep_NRMSE_figure.py to produce the statistics graphs
+# This code demonstrates subtle crime I with Compressed sensing.
+# It reproduces the results in Figure 2a of the Subtle Data Crime paper.
+# (c) Efrat Shimron, UC Berkeley, 2021.
 
-# TODO: make the file 134_{0}.npy a part of the public git repo, and change the loading code
 ##########################################################################################
 
-import numpy as np
 import sys
+import h5py
+import numpy as np
+import matplotlib.pyplot as plt
 
-sys.path.append("/home/efrat/anaconda3/")
-sys.path.append("/home/efrat/anaconda3/lib/python3.7/site-packages/")  # path to sigpy
-
-# add path to functions library - when running on mikQNAP
-sys.path.append("/mikQNAP/efrat/1_inverse_crimes/1_mirror_PyCharm_CS_MoDL_merged/SubtleCrimesRepo/")
+sys.path.append("../../")  # add folder above, for access to the functions library
 
 from functions.utils import merge_multicoil_data, calc_pad_half
-import matplotlib.pyplot as plt
+from functions.sampling_funcs import genPDF, genSampling
+from functions.utils import calc_R_actual,calc_pad_half
 
 #################################################################################
 ## Experiment set-up
@@ -25,31 +24,23 @@ R_vec = np.array([6])
 pad_ratio_vec = np.array([1,2,3])  # Define the desired padding ratios
 
 
-#######################################################################################################################
-##                                Load data - a brain image from FastMRI
-#######################################################################################################################
+##################################################################################
+##                 Load data - a brain image from FastMRI
+##################################################################################
+example_filename = '../brain_data/file_brain_AXT2_207_2070504.h5'
+f = h5py.File(example_filename, "r")
+kspace_orig_multicoil = f["kspace"]
+kspace_orig_multicoil = kspace_orig_multicoil[:,:,::2,:] # reduce image-domain FOV
 
-# ##################### brain data - load some datasets from fastMRI ##############################
-print('loading brain slices...')
-ksp_all_data = np.empty([4, 320, 320, num_slices], dtype='complex64')  # there are currently 10 datasets.
-
-for n in range(num_slices):
-
-    filename = "../../../data/1c_brain_fastMRI_preprocessed/134_{}.npy".format(n)  # TODO: change this in the public git repo
-
-    ksp_slice = np.load(filename)
-    ksp_all_data[:,:,:,n] = np.rot90(ksp_slice,2)
-
-assert np.isnan(ksp_all_data).any() == False, 'there are NaN values in ksp_all_data!'
 
 #################################################################################
-##                               Display kspace example
+##                 Display kspace example
 #################################################################################
 
 fig = plt.figure()
 
 for n in range(num_slices):
-    ksp_full_multicoil = ksp_all_data[:, :, :, n]
+    ksp_full_multicoil = kspace_orig_multicoil[n, :, :, :].squeeze()
 
     print('============ slice %d ==========' % n)
 
@@ -57,8 +48,8 @@ for n in range(num_slices):
     for i, pad_ratio in enumerate(pad_ratio_vec):
         print('--------- padding ratio %d from %d' % (i + 1, len(pad_ratio_vec)), ' --------- ')
 
-        N_original_dim1 = ksp_all_data.shape[1]
-        N_original_dim2 = ksp_all_data.shape[2]
+        N_original_dim1 = ksp_full_multicoil.shape[1]
+        N_original_dim2 = ksp_full_multicoil.shape[2]
 
         pad_half_dim1, N_tot_dim1 = calc_pad_half(N_original_dim1, pad_ratio)
         pad_half_dim2, N_tot_dim2 = calc_pad_half(N_original_dim2, pad_ratio)
@@ -79,33 +70,21 @@ for n in range(num_slices):
 
         plt.subplot(1,3,i+1)
         plt.imshow(np.log(np.abs(ksp2)),cmap="gray")
+        plt.axis('equal')
         plt.axis('off')
 
 plt.show()
-# save as png
-fig.savefig(fname='kspace_squashed.png')
-# save as eps
-fig.savefig(fname='kspace_squashed.eps',forrmat = 'eps', dpi = 1000)
+## save as png
+# fig.savefig(fname='kspace_squashed.png')
+## save as eps
+# fig.savefig(fname='kspace_squashed.eps',forrmat = 'eps', dpi = 1000)
 
 
 #######################################################################################################################
 #                          Display sampling masks + yellow sqaures showing the original kspace area
 #######################################################################################################################
 
-import numpy as np
-import os
-import sys
-
-sys.path.append("/home/efrat/anaconda3/")
-sys.path.append("/home/efrat/anaconda3/lib/python3.7/site-packages/")  # path to sigpy
-
-
-import matplotlib.pyplot as plt
-from functions.sampling_funcs import genPDF, genSampling
-from functions.demos_funcs import calc_pad_half
-from functions.utils import calc_R_actual
-
-######################## pdf profile figs #########################
+######################## pdf profile figures #########################
 R = np.array([6]) # acceleration factor
 
 imSize = (320,320)
@@ -140,7 +119,7 @@ for j, poly_degree in enumerate(poly_degree_vec):
 
 
 
-# ##################### brain data - load some datasets from fastMRI ##############################
+# ##################### brain data - load example from fastMRI ##############################
 
 pad_ratio_vec = np.array([1, 2, 3])
 poly_degree_vec = np.array([1000,10,4])
@@ -152,10 +131,6 @@ for i, pad_ratio in enumerate(pad_ratio_vec):
 
     for j, poly_degree in enumerate(poly_degree_vec):
         print('---------poly_degree  = %f' % (poly_degree), ' --------- ')
-
-        #N_original_dim1 = ksp_all_data.shape[1]
-        #N_original_dim2 = ksp_all_data.shape[2]
-        # print(ksp_all_data.shape)
 
         im1 = np.ones((N_original_dim1, N_original_dim2))
 
@@ -179,7 +154,6 @@ for i, pad_ratio in enumerate(pad_ratio_vec):
         a = im_padded
         b = mask
         inds_inner_square = np.nonzero(a)
-        # inds_inner_sqare_sampled = np.nonzero(b==1)
 
         mask_effective_inner_square = b[inds_inner_square]
         mask_effective_vec = np.reshape(mask_effective_inner_square, (1, -1))
@@ -202,17 +176,14 @@ for i, pad_ratio in enumerate(pad_ratio_vec):
         ax[j][i].set_yticklabels(y_ticks,fontsize=12)
 
 
-        #ax[j][i].tick_params(axis='x', labelsize=22)
-        #ax[j][i].tick_params(axis='y', labelsize=22)
         ax[j][i].axis('equal')
         ax[j][i].axis('tight')
 
-        #ax[j + 1][i].set_axis('off')
         gca= ax[j][i]
         if i==0:
-            linewidth = 4 # 10
+            linewidth = 4
         else:
-            linewidth = 3 #8
+            linewidth = 3
         gca.plot([x1,x1], [y1,y2], color="yellow",linewidth=linewidth)
         gca.plot([x1,x2], [y1,y1], color="yellow",linewidth=linewidth)
         gca.plot([x2,x2], [y1,y2], color="yellow",linewidth=linewidth)
@@ -220,13 +191,10 @@ for i, pad_ratio in enumerate(pad_ratio_vec):
 
 fig.tight_layout()
 plt.show()
-# save as png
-fig.savefig(fname='full_masks_w_yellow_squares_R{}.png'.format(R, poly_degree_vec[0], poly_degree_vec[-1]))
-# save as eps
-fig.savefig(fname='full_masks_w_yellow_sqaures_R{}.eps'.format(R, poly_degree_vec[0], poly_degree_vec[-1]),format = 'eps', dpi = 1000)
+# # save as png
+# fig.savefig(fname='full_masks_w_yellow_squares_R{}.png'.format(R, poly_degree_vec[0], poly_degree_vec[-1]))
+# # save as eps
+# fig.savefig(fname='full_masks_w_yellow_sqaures_R{}.eps'.format(R, poly_degree_vec[0], poly_degree_vec[-1]),format = 'eps', dpi = 1000)
+#
 
-
-print('stop')
-# interactive(False)
-# plt.show()
 

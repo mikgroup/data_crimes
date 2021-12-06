@@ -1,24 +1,16 @@
-# This script runs the experiments for figure 2b in the Subtle Inverse Crimes paper. It computes the effective sampling
+# This script runs the experiments for figure 2b in the Subtle Data Crimes paper. It computes the effective sampling
 # rates and saves the results in a file named R_eff_results_R6.npz.
-#
-# (c) Efrat Shimron, UC Berkeley, 2021.
 
-# TODO: change the path to mikQNAP. Add relative path to the "functions" folder
+# (c) Efrat Shimron, UC Berkeley, 2021.
 
 
 import numpy as np
-import os
 import sys
 
-# add path to functions library - when running on mikQNAP
-sys.path.append("/mikQNAP/efrat/1_inverse_crimes/1_mirror_PyCharm_CS_MoDL_merged/SubtleCrimesRepo/")
-
-sys.path.append("/home/efrat/anaconda3/")
-sys.path.append("/home/efrat/anaconda3/lib/python3.7/site-packages/")  # path to sigpy
+sys.path.append("../")  # add folder above, for access to the functions library
 
 from functions.sampling_funcs import genPDF, genSampling
-from functions.demos_funcs import calc_pad_half
-from functions.utils import calc_R_actual
+from functions.utils import calc_R_actual, calc_pad_half
 
 
 #######################################################################################################
@@ -27,17 +19,14 @@ R = np.array([6])
 pad_ratio_vec = np.array([1, 2,3])
 poly_degree_vec = np.array([ 1000,10,4])
 
-# ##################### brain data - load some datasets from fastMRI ##############################
-ksp_all_data = np.empty([4, 320, 320, 10], dtype='complex64')  # there are currently 10 datasets.
 
+ksp_all_data = np.empty([4, 320, 320, 10], dtype='complex64')  # we don't need k-space data for this experiment, we only need to know its size.
 
 
 ########################### R_eff vs. zero padding #######################3
 # graph of R_eff vs. zero pad
 Num_realizations = 20
 R_eff_vs_pad_and_poly = np.empty((poly_degree_vec.shape[0],pad_ratio_vec.shape[0],Num_realizations))
-
-
 
 for n in range(np.asarray(Num_realizations)):
     print('realization ',n)
