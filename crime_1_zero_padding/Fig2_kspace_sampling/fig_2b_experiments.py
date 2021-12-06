@@ -1,5 +1,6 @@
-# This script runs the experiments for figure 2b in the Subtle Data Crimes paper. It computes the effective sampling
-# rates and saves the results in a file named R_eff_results_R6.npz.
+# This script runs the experiments for figure 2b in the Subtle Data Crimes paper. It then saves the results in a
+# file named R_eff_results_R6.npz.
+# To generate the graphs, run the next script: fig_2b_plot_R_eff_vs_zero_pad.py
 
 # (c) Efrat Shimron, UC Berkeley, 2021.
 
@@ -68,9 +69,6 @@ for n in range(np.asarray(Num_realizations)):
 
 R_eff_vs_pad_and_poly_av = np.mean(R_eff_vs_pad_and_poly,axis=2)
 
-
+# save results
 filename = 'R_eff_results_R{}'.format(R)
 np.savez(filename,R_eff_vs_pad_and_poly=R_eff_vs_pad_and_poly,R_eff_vs_pad_and_poly_av=R_eff_vs_pad_and_poly_av,pad_ratio_vec=pad_ratio_vec,poly_degree_vec=poly_degree_vec)
-
-
-print('data saved successfully')

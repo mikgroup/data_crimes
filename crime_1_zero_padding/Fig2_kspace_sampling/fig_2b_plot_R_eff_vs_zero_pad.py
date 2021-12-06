@@ -1,4 +1,4 @@
-# This script creates the graph displayed in Figure 2b of the Subtle Inverse Crimes paper.
+# This script creates the graph displayed in Figure 2b of the Subtle Data Crimes paper.
 #
 # Before running this script, please run the script fig_2b_experiments.py which computes the effective sampling rates
 # and saves the results in a file named R_eff_results_R6.npz. The current script loads that files and creates the figure.
@@ -8,9 +8,6 @@
 import numpy as np
 import sys
 import matplotlib.pyplot as plt
-
-sys.path.append("/home/efrat/anaconda3/")
-sys.path.append("/home/efrat/anaconda3/lib/python3.7/site-packages/")  # path to sigpy
 
 
 R = np.array([6])
