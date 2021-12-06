@@ -2,10 +2,8 @@
 # (c) Efrat Shimron, UC Berkeley, 2021.
 
 
-import os
 import numpy as np
 import h5py
-import sys
 
 import matplotlib.pyplot as plt
 
@@ -14,10 +12,6 @@ from sigpy import mri as mr
 from functions.error_funcs import error_metrics
 from functions.sampling_funcs import gen_2D_var_dens_mask
 from functions.utils import zpad_merge_scale
-
-sys.path.append("/home/efrat/anaconda3/")
-sys.path.append("/home/efrat/anaconda3/lib/python3.7/site-packages/")  # path to sigpy
-
 
 ###################################### settings ######################################3
 
@@ -34,7 +28,7 @@ num_slices = 1
 R_vec = np.array([6])
 pad_ratio_vec = np.array([1,2,3])  # Define the desired padding ratios
 num_realizations = 1  # number of sampling masks that will be generated for each case
-data_filename = 'fast_exp_results_R{}'.format(R_vec[0])  # filename for saving
+
 
 #### load data
 example_filename = '../brain_data/file_brain_AXT2_207_2070504.h5'
@@ -229,6 +223,7 @@ for pad_i in range(pad_ratio_vec.shape[0]):
         # fig.savefig(figname)
 
 # save results
+# data_filename = 'fast_exp_results_R{}'.format(R_vec[0])  # filename for saving
 #np.savez(data_filename,rec_gold = rec_gold,CS_NRMSE_arr=CS_NRMSE_arr,R_vec=R_vec,sampling_type_vec=sampling_type_vec,pad_ratio_vec = pad_ratio_vec)
 
 
@@ -254,7 +249,7 @@ plt.show()
 fig.savefig('brain_gold_full_FOV')
 
 
-### display recons + NRMSEs in subplots 
+### display recons + NRMSEs in subplots
 fig, ax = plt.subplots(nrows=(sampling_type_vec.shape[0]), ncols=(pad_ratio_vec.shape[0] + 2),
                        figsize=(20, 10),subplot_kw={'aspect': 1})
 fig.subplots_adjust(bottom=0, top=1,left=0, right=1)
