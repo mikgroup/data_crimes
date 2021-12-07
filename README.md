@@ -57,7 +57,7 @@ were used in our pathology experiments. However, there's no need to place them i
 
 ## Pre-trained networks
 
-The weights of our pre-trained networks are publicly available here:
+The weights of our pre-trained networks will soon be publicly available here:
 https://berkeley.box.com/s/lamdqhruiwxuxtwwjiv8xly5mohshot9
 
 
