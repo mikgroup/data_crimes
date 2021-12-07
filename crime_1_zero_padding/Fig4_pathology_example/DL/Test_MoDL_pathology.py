@@ -48,6 +48,7 @@ class Namespace:
 
 
 # TODO: "params" is defind here but it is also LOADED later in the code - check why we need it both here and there
+
 # Hyper parameters
 params = Namespace()
 
@@ -56,23 +57,15 @@ print('2D VAR DENS')
 params.sampling_flag = 'var_dens_2D'
 params.NX_full_FOV = 640
 params.NY_full_FOV = 372
+checkpoint_vec = np.array([69])
+unrolls = 6
 
 ######################################################################################################
 #                                     experiment settings
 ######################################################################################################
 
-checkpoint_vec = np.array([69])
 
-unrolls = 6
-
-small_dataset_flag = 0
-
-
-# pad_ratio_vec = np.array([1,1.25,1.5,1.75,2])  # np.array([1,2])
 pad_ratio_vec = np.array([1,2])
-
-# TODO: change the next vec from sampling_type_vec to samp_type_vec and change the values to [1,2] for compatibility with the rest of the code
-#sampling_type_vec = np.array([0])  # np.array([0,1])    #0 = weak var dens, 1 = strong var dens
 sampling_type_vec = np.array([1,2])  # 0 = random, 1 = weak var-dens, 2 = strong var-dens
 
 # data_type = 'test'
@@ -93,7 +86,7 @@ im_type_str = 'full_im'  # inference is done on full images (training was done o
 gold_dict = {}  # a python dictionary that will contain the gold standard recons
 DL_recs_dict = {}  # a python dictionary that will contain the reconstructions obtained with Compressed Sensing
 
-######################################################################################################
+# Initialize arrays
 
 NRMSE_av_vs_pad_ratio_and_R = np.zeros((R_vec.shape[0], pad_ratio_vec.shape[0], sampling_type_vec.shape[0]))
 NRMSE_std_vs_pad_ratio_and_R = np.zeros((R_vec.shape[0], pad_ratio_vec.shape[0], sampling_type_vec.shape[0]))
@@ -104,24 +97,7 @@ n_test_images = 0
 
 for r in range(R_vec.shape[0]):
     R = R_vec[r]
-    print('================================================== ')
-    print('                         R={}                      '.format(R))
-    print('================================================== ')
-
-    # Important - here we update R in the params in order to create masks with appropriate sampling
-    # The mask is created in the DataTransform (utils/datasets
     params.R = R
-
-    # for qi in range(q_vec.shape[0]):
-    #     q = q_vec[qi]
-    #     print('========= q={} ======== '.format(q))
-
-    # for v_i in range(sampling_type_vec.shape[0]):
-    #
-    #     if sampling_type_vec[v_i] == 0:
-    #         var_dens_flag = 'weak'
-    #     elif sampling_type_vec[v_i] == 1:
-    #         var_dens_flag = 'strong'
 
     for j in range(sampling_type_vec.shape[0]):
 
@@ -150,22 +126,13 @@ for r in range(R_vec.shape[0]):
             params.pad_ratio = pad_ratio  # zero-padding ratio
 
 
-            basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v19_FatSatPD"
-
-            if small_dataset_flag == 1:
-                print('*** using a SMALL dataset ***')
-                basic_data_folder = basic_data_folder + '_small/'
-            else:
-                basic_data_folder = basic_data_folder + '/'
+            FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v19_FatSatPD/"
 
             # path to test data
-            params.data_path = basic_data_folder + data_type + "/pad_" + str(
+            params.data_path = FatSat_processed_data_folder + data_type + "/pad_" + str(
                 int(100 * params.pad_ratio)) + "/" + im_type_str + "/"
 
             print('test data path:', params.data_path)
-
-            # params.calib = int(24 * pad_ratio)
-            # print('calib = ',params.calib)
 
             # calib is assumed to be 12 for NX=640
             calib_x = int(12 * (params.NX_full_FOV / 640) * pad_ratio)
@@ -183,25 +150,13 @@ for r in range(R_vec.shape[0]):
                 print('checkpoint_num:', checkpoint_num)
 
                 # load trained network
-                if small_dataset_flag == 1:
-                    # checkpoint_file = 'R{}_pad_ratio_{}_unrolls_{}_small_dataset/checkpoints/model_{}.pt'.format(params.R, pad_ratio, unrolls,checkpoint_num)
-                    checkpoint_file = 'R{}_pad_{}_unrolls_{}_{}_var_dens_small_data/checkpoints/model_{}.pt'.format(
-                        params.R, str(int(100 * pad_ratio)),
-                        unrolls,
-                        samp_type,
-                        checkpoint_num,
-                    )
-                elif small_dataset_flag == 0:
-                    # checkpoint_file = 'R{}_pad_ratio_{}_unrolls_{}/checkpoints/model_{}.pt'.format(params.R,pad_ratio, unrolls,checkpoint_num)
-                    checkpoint_file = 'R{}_pad_{}_unrolls_{}_{}_var_dens/checkpoints/model_{}.pt'.format(
-                        params.R,
-                        str(int(100 * pad_ratio)),
-                        unrolls,
-                        samp_type,
-                        checkpoint_num,
-                    )
-                    # checkpoint_file = 'R{}_pad_{}_unrolls_{}_small_data_{}_var_dens/checkpoints/model_{}.pt'.format(
-                    #     params.R, pad_ratio, unrolls, samp_type, checkpoint_num)
+                checkpoint_file = 'R{}_pad_{}_unrolls_{}_{}_var_dens/checkpoints/model_{}.pt'.format(
+                    params.R,
+                    str(int(100 * pad_ratio)),
+                    unrolls,
+                    samp_type,
+                    checkpoint_num,
+                )
 
                 print('checkpoint_file=')
                 print(checkpoint_file)
@@ -210,9 +165,6 @@ for r in range(R_vec.shape[0]):
 
                 params_loaded = checkpoint["params"]
                 single_MoDL = UnrolledModel(params_loaded).to(device)
-
-                #print('params.data_path: ', params.data_path)
-                #print('params.batch_size: ', params.batch_size)
 
                 # # Data Parallelism - enables running on multiple GPUs
                 # if (torch.cuda.device_count() > 1) & (use_multiple_GPUs_flag == 1):
@@ -382,91 +334,3 @@ np.save(gold_filename , gold_dict)
 DL_rec_filename = results_dir + '/DL_dict.npy'
 np.save(DL_rec_filename, DL_recs_dict)
 
-
-# #################### prep for plots #################33
-#
-# # NOTICE: the following code creates and saves the figures, but for some reason the axis labels aren't
-# # displayed properly.
-# # for better figures run the script fig4ISMRM_Test_MoDL_run5 after running this script
-#
-# # prepare x ticks labels for the NRMSE and SSIM graphs
-# x = pad_ratio_vec
-# x_ticks_labels = []
-# for i in range(pad_ratio_vec.shape[0]):
-#     x_ticks_labels.append('x{}'.format(pad_ratio_vec[i]))
-#
-# markers = ['o', 's', 'v', 'h', '8']
-# # colorslist = ['b','r']
-
-# #########################   plots  ####################################################################
-#
-# # display NRMSE
-# fig = plt.figure()
-# for j in range(sampling_type_vec.shape[0]):
-#     if sampling_type_vec[j] == 0:
-#         samp_type = 'weak'
-#     elif sampling_type_vec[j] == 1:
-#         samp_type = 'strong'
-#
-#     label_str = samp_type + " var-dens"
-#
-#     for r in range(R_vec.shape[0]):
-#         plt.errorbar(pad_ratio_vec, NRMSE_av_vs_pad_ratio_and_R[r, :, j].squeeze(),
-#                      yerr=NRMSE_std_vs_pad_ratio_and_R[r, :, j].squeeze(), linestyle='solid', label=label_str,
-#                      marker=markers[j])
-#
-# # plt.ylim((0,0.075))
-# plt.xlabel('Zero padding ratio', fontsize=18)
-# plt.ylabel('NRMSE', fontsize=20)
-# ax = plt.gca()
-# ax.set_xticks(x)
-# ax.set_xticklabels(x_ticks_labels, fontsize=18)
-# plt.locator_params(axis='y', nbins=3)
-# plt.yticks(fontsize=20)
-# plt.xticks(fontsize=20)
-# ax.legend(fontsize=20)
-# plt.title('N_examples_stats={}'.format(N_examples_stats))
-# plt.show()
-# fig.savefig('RESULTS_imSize372_NRMSE_N_examples_stats_{}'.format(N_examples_stats))
-#
-# # Display SSIM
-# fig = plt.figure()
-# for j in range(sampling_type_vec.shape[0]):
-#     if sampling_type_vec[j] == 0:
-#         samp_type = 'weak'
-#     elif sampling_type_vec[j] == 1:
-#         samp_type = 'strong'
-#
-#     label_str = samp_type + " var-dens"
-#
-#     for r in range(R_vec.shape[0]):
-#         plt.errorbar(pad_ratio_vec, SSIM_av_vs_pad_ratio_and_R[r, :, j].squeeze(),
-#                      yerr=SSIM_std_vs_pad_ratio_and_R[r, :, j].squeeze(), linestyle='solid', label=label_str,
-#                      marker=markers[j])
-#
-# # plt.ylim((0,0.075))
-# plt.xlabel('Zero padding ratio', fontsize=18)
-# plt.ylabel('SSIM', fontsize=20)
-# ax = plt.gca()
-# ax.set_xticks(x)
-# ax.set_xticklabels(x_ticks_labels, fontsize=18)
-# plt.locator_params(axis='y', nbins=3)
-# plt.yticks(fontsize=20)
-# plt.xticks(fontsize=20)
-# ax.legend(fontsize=20, loc="lower right")
-# plt.title('N_examples_stats={}'.format(N_examples_stats))
-# plt.show()
-# fig.savefig('RESULTS_imSize372_SSIM_N_examples_stats_{}'.format(N_examples_stats))
-#
-# print('saved figures successfully')
-
-# ################################ save data ##################################333
-# # save SSIM_av & SSIM
-# results_filename = 'DNN_results_NRMSE_and_SSIM_N_examples_stats_{}.npz'.format(N_examples_stats)
-# np.savez(results_filename, R_vec=R_vec, pad_ratio_vec=pad_ratio_vec, params=params, checkpoint_num=checkpoint_num,
-#          NRMSE_av_vs_pad_ratio_and_R=NRMSE_av_vs_pad_ratio_and_R,
-#          NRMSE_std_vs_pad_ratio_and_R=NRMSE_std_vs_pad_ratio_and_R,
-#          SSIM_av_vs_pad_ratio_and_R=SSIM_av_vs_pad_ratio_and_R,
-#          SSIM_std_vs_pad_ratio_and_R=SSIM_std_vs_pad_ratio_and_R)
-# print('saved .npz file')
-# # np.savez(tmp_filename, loss_vs_i_batch_vec=loss_vs_i_batch_vec, NRMSE_vs_i_batch_vec=NRMSE_vs_i_batch_vec)

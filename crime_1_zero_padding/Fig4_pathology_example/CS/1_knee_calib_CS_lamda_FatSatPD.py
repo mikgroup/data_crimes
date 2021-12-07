@@ -2,10 +2,7 @@
 # Run the *fast* experiment to see the images & NRMSE valus on top of them.
 # Run the *long* experiment (10 slices x 3 samlpling mask realizations each) to get statistics.
 # Then run the script CS_DL_knee_prep_NRMSE_figure.py to produce the statistics graphs
-
-#############################################################
-# calibration run - this code (1_knee_calib_CS_lada.py)
-
+# Efrat Shimron (UC Berkeley, 2021)
 
 ##########################################################################################
 import os
@@ -13,23 +10,21 @@ import numpy as np
 import h5py
 import sys
 # add path to functions library - when running on mikQNAP
-sys.path.append("/mikQNAP/efrat/1_inverse_crimes/1_mirror_PyCharm_CS_MoDL_merged/SubtleCrimesRepo/")
+# sys.path.append("/mikQNAP/efrat/1_inverse_crimes/1_mirror_PyCharm_CS_MoDL_merged/SubtleCrimesRepo/")
 
 import matplotlib.pyplot as plt
-from functions.utils import merge_multicoil_data
 import sigpy as sp
 from sigpy import mri as mr
-#from matplotlib import interactive
-#from functions.demos_funcs import demo1_zero_pad_MAG_run_exps
-from functions.utils import pad_multicoil_ksp,save_as_png
 from functions.error_funcs import error_metrics
-#from functions.sampling_funcs import genPDF, genSampling
 from functions.sampling_funcs import gen_2D_var_dens_mask
 
 
+#sys.path.append("/home/efrat/anaconda3/")
+#sys.path.append("/home/efrat/anaconda3/lib/python3.7/site-packages/")  # path to sigpy
 
-sys.path.append("/home/efrat/anaconda3/")
-sys.path.append("/home/efrat/anaconda3/lib/python3.7/site-packages/")  # path to sigpy
+
+# update the next field and make sure that it's the same one as defined in Fig4_pathology_example/data_prep.py
+FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v19_FatSatPD"
 
 #################################################################################
 ## Experiment set-up
@@ -40,21 +35,11 @@ im_type_str = 'full_im'  # Options: 'full_im' / 'blocks' (blocks are used for tr
 
 
 R_vec = np.array([4])
-#pad_ratio_vec = np.array([1,2,3])
 pad_ratio_vec = np.array([1,1.25,1.5,1.75,2])
 
 
 sampling_type_vec = np.array([1,2])  # 0 = random, 1 = strong var-dens, 2 = weak var-dens
 sampling_flag = '2D'
-
-# # alpha_vec = np.array([0.5,1,50])
-# alpha_vec = np.array([0, 0.3, 100])
-# R_vec = np.array([4])
-# num_realizations = 1;  # number of sampling masks that will be generated for each case
-#
-# # Define the desired padding ratios here:
-# pad_ratio_vec = np.arange(1, 3.1,
-#                           1)  # this defines a numpy array with the desired padding ratios:  ratio=N_padded/N_original
 
 single_slice_example_flag = 0  # turn this flag on (=1) for debugging. Use 0 for recon of multiple slices
 
@@ -71,8 +56,6 @@ data_filename = 'knee_lamda_calib_R{}_num_slices{}_Nsamp{}_FatSat'.format(R_vec[
 # #################################################################################
 
 
-
-#lamda = 1e-5  # calibrated for the FastMRI knee data
 lamda_vec = np.array([1e-9,1e-8,1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1])
 lamda_vec = np.sort(lamda_vec)
 
@@ -102,14 +85,14 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
     ns = 0 # counts loaded slices
 
 
-    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v19_FatSatPD"
+
 
     if small_dataset_flag == 1:
-        basic_data_folder = basic_data_folder + '_small/'
+        FatSat_processed_data_folder = FatSat_processed_data_folder + '_small/'
     else:
-        basic_data_folder = basic_data_folder + '/'
+        FatSat_processed_data_folder = FatSat_processed_data_folder + '/'
 
-    data_path = basic_data_folder + data_type + "/pad_" + str(
+    data_path = FatSat_processed_data_folder + data_type + "/pad_" + str(
         int(100 * pad_ratio)) + "/" + im_type_str + "/"
 
     files_list = os.listdir(data_path)

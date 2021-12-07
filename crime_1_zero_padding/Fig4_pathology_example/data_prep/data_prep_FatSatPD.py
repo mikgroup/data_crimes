@@ -1,45 +1,16 @@
-# This file loads fully-sampled multi-coil knee data (FastMRI) and prepares training, validation and
-# test data for the zero-padding experiments.
-# ----------------
-# documentation:
-# v11 - based on v10. here I defined the helper func zpad_merge_scale
-# v13 - based on v11. I'm not checking if pad_ratio=2.5 can fit on a GPU.
-# v14 - throwing out more edge slices in order to avoid blocks that contain mostly zeros
-#     - checking if the h5 files contains Proton Desity (PD) with Fast Supression (PDFS) or without it. Data without FS should give better results.
-# v15 - based on v14. trying to find out why there are memory problems on mikneto
+'''
+This file loads fully-sampled multi-coil knee data (from the FastMRI database and prepares the data for our
+zero-padding experiments. It also splits the data into training, validation and test sets.
 
-# v16 -  what's new here:
-#       1. This code prepares the data for CS, DictL and DL algorithms.
-#       For CS and DictL we need only full-FOV images, split into train/val/test
-#       For DL we need:
-#           - patches for the train/val data, where the patch size scales with block size
-#           - full-FOV images for test data - the SAME TEST IMAGES will be used for CS, DictL and DL
-#       2. Previously, ALL the images were taken from the folder /mikQNAP/NYU_knee_data/multicoil_train/ (i,e. from FastMRI TRAIN) data,
-#          and they were split into train/val/test
-#          Now, train/val/test data will be taken from the appropriate train/val/test folders.
+NOTICE: you should update the variable FatSat_processed_data_folder to YOUR desired path.
 
-# v17 -
-# 1. The pathology examples are removed from the training files LIST in advance, before iterating over the files
-# (previously there was an "if" condition to avoid using them during trainig)
-# 2. Val data is taken only from FastMRI's val data folder.
-# 3. Val data - we take 10 subjects and randomly choose only a single slice from each subject, and store it.
-#    The reason that we store only a single slice (rather than storing all of them and later choosing a slice randomly) is
-#    that we need to make sure that ALL the DictL runs (for pad_ratio 1 / 1.25 / 1.5... and weak/strong VD..) are made
-#    EXACTLY with the same 10 slices.
-
-# v18 - This version is similar to v17.
-# 1. I changed the splitting of train/test data (both are taken from FastMRI train data): the split is at 25 scans.
-# 2. Increased the number of training scans from 150 subjects to 300 subjects.
-# 3. I DID NOT change the val data at all - so the val data of v17 is identical to the val data of v18 (so all the DictL param calibration runs are still valid).
-
-# v19: this is a DIFFERENT dataset, which includes FatSatPD
+(c) Efrat Shimron, UC Berkeley, 2021.
+'''
 
 
-import sys
 
 # add folder above (while running on mikQNAP):
-sys.path.append("/mikQNAP/efrat/1_inverse_crimes/1_mirror_PyCharm_CS_MoDL_merged/SubtleCrimesRepo/")
-# sys.path.append("/mikQNAP/efrat/1_inverse_crimes/1_mirror_PyCharm_CS_MoDL_merged/SubtleCrimesRepo/functions")
+#sys.path.append("/mikQNAP/efrat/1_inverse_crimes/1_mirror_PyCharm_CS_MoDL_merged/SubtleCrimesRepo/")
 
 import numpy as np
 import os
@@ -48,35 +19,19 @@ import sigpy as sp
 from functions.utils import zpad_merge_scale
 import matplotlib.pyplot as plt
 
+
+# update the next path to YOUR desired path.
+FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v19_FatSatPD/"
+
 ######################################################################################################################
 #                                                   Prep data
 ######################################################################################################################
 
-create_small_dataset_flag = 0 # 0 = large database, 1 = small database, 2 = large database consisting of images of size 372 only
+N_train_datasets = 300
+N_val_datasets = 10
+N_test_datasets = 7
+pad_ratio_vec = np.array([1,1.25,1.5,1.75,2])  # Define the desired padding ratios
 
-if create_small_dataset_flag == 1:
-    print('creating a SMALL dataset')
-    N_train_datasets = 5  # num scans
-    N_val_datasets = 3
-    N_test_datasets = 3
-    # pad_ratio_vec = np.array([3])
-    # pad_ratio_vec = np.array([1, 2, 3])  # Define the desired padding ratios
-    # pad_ratio_vec = np.array([1,2, 3])  # Define the desired padding ratios
-    # pad_ratio_vec = np.array([1, 2])
-    pad_ratio_vec = np.array([1])
-
-elif create_small_dataset_flag == 0:
-
-    print('creating a LARGE dataset')
-    ############# large dataset #############
-    # N_train_datasets = 700  # 700 is TOO MUCH!! runs are ~1 week each. # this the number of h5 files to be used. Each h5 file contains 20-30 slices, of which we can use many (not the edge ones).
-    N_train_datasets = 300
-    N_val_datasets = 10
-    N_test_datasets = 7
-    pad_ratio_vec = np.array([1,1.25,1.5,1.75,2])  # Define the desired padding ratios
-    #pad_ratio_vec = np.array([1])  # Define the desired padding ratios
-
-print('pad_ratio_vec=', pad_ratio_vec)
 
 #################################### data split ###############################################
 # NOTICE: the original FastMRI database is divided to train/val/test data.
@@ -86,27 +41,18 @@ print('pad_ratio_vec=', pad_ratio_vec)
 
 FastMRI_train_folder = "/mikQNAP/NYU_knee_data/multicoil_train/"
 FastMRI_val_folder = "/mikQNAP/NYU_knee_data/multicoil_val/"
-# home_dir_test = "/mikQNAP/NYU_knee_data/multicoil_test/"
+
 
 FastMRI_train_folder_files = os.listdir("/mikQNAP/NYU_knee_data/multicoil_train/")
 FastMRI_val_folder_files = os.listdir("/mikQNAP/NYU_knee_data/multicoil_val/")
-# home_dir_test_files = os.listdir("/mikQNAP/NYU_knee_data/multicoil_test/")
 
 # Split the LISTS of FastMRI training files into two lists: train & test files.
-
-# data_prep_v17
-#test_files_list =  FastMRI_train_folder_files[0:140]  # we take the first 50 scans. Some of them will be PD and some will be FatSatPD; later in the code we'll use only PD.
-#train_files_list = FastMRI_train_folder_files[141::]
-
-# data_prep_v18
 train_files_list = FastMRI_train_folder_files[0:800] # There are 973 scans in total. We reserve the last 173 scans for test data.
 test_files_list =  FastMRI_train_folder_files[800::]
-
 
 val_files_list = FastMRI_val_folder_files
 
 # Remove the 2 pathology examples from the lists of training files. The pathologies will be used separately, as test cases.
-
 if 'file1000425.h5' in train_files_list:
     print(f'pathology 1 is in train_files_list')
     train_files_list.remove('file1000425.h5')
@@ -391,15 +337,8 @@ for data_i in np.array([4]):  # 0 = train, 1 = val, 2 = test, 3 = pathology case
                             kspace_coils_merged_padded_multi_slice[s_i, :, :] = kspace_slice
 
                         ################## saving -  all slices extracted from a single h5 file are saved together  =================
-                        # where to save the output files:
-                        basic_out_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v19_FatSatPD"
 
-                        if create_small_dataset_flag == 1:
-                            basic_out_folder = basic_out_folder + '_small/'
-                        else:
-                            basic_out_folder = basic_out_folder + '/'
-
-                        out_folder = basic_out_folder + data_type + "/pad_" + str(
+                        out_folder = FatSat_processed_data_folder + data_type + "/pad_" + str(
                             int(100 * pad_ratio)) + "/" + im_type_str + "/"
 
 
@@ -440,7 +379,7 @@ print('N_imgs_val: ', N_imgs_val)
 print('N_imgs_test: ', N_imgs_test)
 
 
-meta_filename = basic_out_folder + 'num_stored_slices'
+meta_filename = FatSat_processed_data_folder + 'num_stored_slices'
 np.savez(meta_filename, N_PD_scans_train=N_PD_scans_train, N_PD_scans_val=N_PD_scans_val, N_PD_scans_test=N_PD_scans_test,N_imgs_train=N_imgs_train,N_imgs_val=N_imgs_val,N_imgs_test=N_imgs_test)
 
 

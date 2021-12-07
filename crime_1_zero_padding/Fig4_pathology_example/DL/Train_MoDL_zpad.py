@@ -1,47 +1,18 @@
 # This is based on Ke's notebook Train_MoDL.ipynb
 
 ##############################################################################################
-# To run this code, use the conda virtual environment "subtle_env"
-# (two identical environments were defined on mikneto or mikshoov)
-
 # Example - how to run this script from linux command line:
 # python3 Train_xxxxx.py  --R 4 --pad_ratio 1 --gpu 0 --var_dens_flag 'strong'
 ###############################################################################################
 
-# Training data:
-# the data in the folder train/
-# was taken from
-# /mikQNAP/NYU_knee_data/singlecoil_train/
-
-
-#######################################################################################################
-# documentation:
-# v12 - the type of the input variable "pad_ratio" was changed from int to float, to enable pad_ratio of 1.5 etc.
-# v16 - now using data_prep_v17, which contains a new splitting of the train/val/test data
-# v18 - now using data_prep_v18, which contains 300 training examples. the SAME VAL DATA as in v16 (val dir was copied).
-# v19 - this version is identical to v18, except that the networks are trained on FatSatPD (not PD) data. Data prep code v19.
-
 
 # %matplotlib notebook
 import os, sys
-import sys
-# import os.path
-#
-# # add folder above
-# sys.path.append(
-#     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
-
-
 import logging
 import numpy as np
 import torch
-import sigpy as sp
 import torch.nn as nn
 import copy
-from torch.utils.data import DataLoader
-import matplotlib
-
-#matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 from utils import complex_utils as cplx
@@ -127,37 +98,27 @@ if __name__ == '__main__':
 
     params_val = copy.copy(params)
 
-    small_dataset_flag = 0
 
-
-    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v19_FatSatPD" # FatSatPD
+    FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v19_FatSatPD/" # FatSatPD
     print('FatSatPD data is used!')
 
-    if small_dataset_flag == 1:
-        basic_data_folder = basic_data_folder + '_small/'
-    else:
-        basic_data_folder = basic_data_folder + '/'
+    FatSat_processed_data_folder = FatSat_processed_data_folder + '/'
 
     # path to train data
     data_type = 'train'
-    params.data_path = basic_data_folder + data_type + "/pad_" + str(
+    params.data_path = FatSat_processed_data_folder + data_type + "/pad_" + str(
         int(100 * params.pad_ratio)) + "/" + im_type_str + "/"
 
     # path to val data
     data_type = 'val'
-    params_val.data_path = basic_data_folder + data_type + "/pad_" + str(
+    params_val.data_path = FatSat_processed_data_folder + data_type + "/pad_" + str(
         int(100 * params.pad_ratio)) + "/" + im_type_str + "/"
 
     # create a directory for the current MoDL run
     run_foldername = 'R{}_pad_{}_unrolls_{}_{}_var_dens'.format(params.R, str(int(100 * params.pad_ratio)),
                                                                 args.unrolls, args.var_dens_flag)
-    if small_dataset_flag == 1:
-        run_foldername= run_foldername + '_small/'
 
 
-
-
-    print('training data folder - CHECK!')
     print(params.data_path)
 
     print('num unrolls=',args.unrolls)

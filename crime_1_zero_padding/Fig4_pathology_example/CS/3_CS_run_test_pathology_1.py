@@ -74,10 +74,10 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
     if (pad_ratio==1) | (pad_ratio==2):
         pad_ratio_str = int(pad_ratio)
 
-    # data path setup
-    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v19_FatSatPD/"
+    # # update the next field and make sure that it's the same one as defined in Fig4_pathology_example/data_prep.py
+    FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v19_FatSatPD/"
 
-    data_path = basic_data_folder + data_type + "/pad_" + str(
+    data_path = FatSat_processed_data_folder + data_type + "/pad_" + str(
         int(100 * pad_ratio)) + "/" + im_type_str + "/"
 
     files_list = os.listdir(data_path)
