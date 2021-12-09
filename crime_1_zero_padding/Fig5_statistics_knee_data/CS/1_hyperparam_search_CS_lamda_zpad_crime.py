@@ -1,18 +1,14 @@
-'''
-This code demonstrates subtle crime I with Compressed sensing.
 
-Before running it, run the script Fig4_pathology_example/data_prep.py to prepare the database.
-
-Make sure that the data path defined here - in FatSat_processed_data_folder - is identical to the output path defined
- in the data preparation script.
-
-(c) Efrat Shimron (UC Berkeley, 2021)
-'''
+# TODO: remove the unnecessary "R" dimension from here and from the next code, which reads the results
+# TODO: remove the "small" dataset option
 
 ##########################################################################################
 import os
 import numpy as np
 import h5py
+import sys
+# add path to functions library - when running on mikQNAP
+sys.path.append("/mikQNAP/efrat/1_inverse_crimes/1_mirror_PyCharm_CS_MoDL_merged/SubtleCrimesRepo/")
 
 import matplotlib.pyplot as plt
 import sigpy as sp
@@ -20,8 +16,10 @@ from sigpy import mri as mr
 from functions.error_funcs import error_metrics
 from functions.sampling_funcs import gen_2D_var_dens_mask
 
-# update the next field and make sure that it's the same one as defined in Fig4_pathology_example/data_prep.py
-FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v19_FatSatPD/"
+
+
+sys.path.append("/home/efrat/anaconda3/")
+sys.path.append("/home/efrat/anaconda3/lib/python3.7/site-packages/")  # path to sigpy
 
 #################################################################################
 ## Experiment set-up
@@ -32,6 +30,7 @@ im_type_str = 'full_im'  # Options: 'full_im' / 'blocks' (blocks are used for tr
 
 R_vec = np.array([4])
 pad_ratio_vec = np.array([1,1.25,1.5,1.75,2])
+
 
 sampling_type_vec = np.array([1,2])  # 0 = random, 1 = strong var-dens, 2 = weak var-dens
 sampling_flag = '2D'
@@ -44,16 +43,19 @@ if single_slice_example_flag ==1 :
 else:
     num_slices = 10 #
 
-data_filename = 'knee_lamda_calib_R{}_num_slices{}_Nsamp{}_FatSat'.format(R_vec[0],num_slices,sampling_type_vec.shape[0])
+data_filename = 'knee_lamda_calib_R{}_num_slices{}_Nsamp{}'.format(R_vec[0],num_slices,sampling_type_vec.shape[0])
 
 # #################################################################################
 # ##                              Initialize arrays & dicts
 # #################################################################################
 
 
-lamda_vec = np.array([1e-9,1e-8,1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1])
+
+#lamda = 1e-5  # calibrated for the FastMRI knee data
+lamda_vec = np.array([1e-8,1e-9,1e-7, 1e-6, 1e-5,  1e-4, 1e-3, 1e-2,1e-1])
 lamda_vec = np.sort(lamda_vec)
 
+#lamda_vec = np.array([1e-7, 1e-6, 1e-5, 1e-4, 1e-3])
 
 gold_dict = {}
 recs_dict = {}
@@ -61,6 +63,8 @@ masks_dict = {}
 
 NRMSE_arr = np.empty([num_slices, pad_ratio_vec.shape[0], R_vec.shape[0], sampling_type_vec.shape[0],lamda_vec.shape[0]])
 #SSIM_arr  = np.empty([num_slices, pad_ratio_vec.shape[0], R_vec.shape[0], sampling_type_vec.shape[0]])
+
+small_dataset_flag = 0
 
 figs_folder = 'figs'
 if not os.path.exists(figs_folder):
@@ -77,7 +81,15 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
     t = 0 # counts loaded scans. each scan contains multiple slices.
     ns = 0 # counts loaded slices
 
-    data_path = FatSat_processed_data_folder + data_type + "/pad_" + str(
+
+    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v18" # TODO: remove the "v18" or replace the mikQNAP path with another one
+
+    if small_dataset_flag == 1:
+        basic_data_folder = basic_data_folder + '_small/'
+    else:
+        basic_data_folder = basic_data_folder + '/'
+
+    data_path = basic_data_folder + data_type + "/pad_" + str(
         int(100 * pad_ratio)) + "/" + im_type_str + "/"
 
     files_list = os.listdir(data_path)
@@ -111,7 +123,6 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
         print(f'pad_ratio {pad_ratio}  t={t}')
 
         for s_i in range(n_slices_in_scan):
-        #for s_i in slices_to_use:
             print(f'slice {s_i}')
 
             kspace_slice = kspace_preprocessed_multislice[s_i,:,:].squeeze()
@@ -121,14 +132,6 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
             print(f'ns={ns}')
 
             imSize = im_RSS.shape
-
-            # ksp_slice_padded = pad_multicoil_ksp(ksp_slice,pad_ratio)
-            #
-            # # compute a single *magnitude* image from the data
-            # mag_im = merge_multicoil_data(ksp_slice_padded)
-            #
-            # # go back to k-space - generate an artificial kspace
-            # kspace_slice = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(mag_im)))
 
             # normalize k-space
             #kspace_slice = kspace_slice / np.max(np.abs(kspace_slice))
@@ -140,8 +143,6 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
 
             # ------- run recon experiment -----------------
             # gold standard recon (fully-sampled data, with the current zero padding length)
-            #print('Gold standard rec from fully sampled data...')
-
             rec_gold = sp.ifft(kspace_slice)
             rec_gold = rec_gold[0,:,:].squeeze() # remove artificial coil dim
 
@@ -181,42 +182,32 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
 
                     mask, pdf, poly_degree = gen_2D_var_dens_mask(R, imSize, samp_type, calib=calib)
 
-                     # ======================
-
-                    mask_expanded = np.expand_dims(mask, axis=0)  # add the empty coils
+                    mask_expanded = np.expand_dims(mask, axis=0)  # add the empty coils dimension - this dimension is required by SigPy
                     kspace_sampled = np.multiply(kspace_slice, mask_expanded)
 
                     for lam_i in range(lamda_vec.shape[0]):
                         lamda = lamda_vec[lam_i]
 
-                        #print(f'CS rec; lamda {lamda}')
-                        # CS recon from sampled data
-                        #print('CS rec...')
                         rec = mr.app.L1WaveletRecon(kspace_sampled, virtual_sens_maps, lamda=lamda, show_pbar=False).run()
 
                         A = error_metrics(rec_gold, rec)
                         A.calc_NRMSE()
-                        #A.calc_SSIM()
 
                         print(f'CS rec; lamda {lamda}; NRMSE={A.NRMSE:.3f}')
 
                         cmax = np.max([np.abs(rec_gold),np.abs(rec)])
-                        #if ns==2:
+
                         fig = plt.figure()
                         plt.subplot(1,3,1)
                         plt.imshow(np.abs(np.rot90(rec_gold,2)), cmap="gray")
                         plt.title('rec_gold')
                         plt.clim(0,cmax)
                         plt.colorbar(shrink=0.25)
-                        #plt.show()
 
-                        #fig = plt.figure()
                         plt.subplot(1,3,2)
                         plt.imshow(mask, cmap="gray")
                         plt.colorbar(shrink=0.25)
-                        #plt.show()
 
-                        #fig = plt.figure()
                         plt.subplot(1,3,3)
                         plt.imshow(np.abs(np.rot90(rec,2)),cmap="gray")
                         plt.title(f'CS lamda={lamda} \n NRMSE {A.NRMSE:.3f}')
@@ -229,11 +220,6 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
 
 
                         NRMSE_arr[ns-1,pad_i,r,j,lam_i] = A.NRMSE
-                        #SSIM_arr[ns-1,pad_i,r,j] = A.SSIM
-
-                        #gold_dict[ns-1] = rec_gold
-                        #recs_dict[ns-1,pad_i,r,j] = rec  # store the results in a dictionary
-                        #masks_dict[ns-1,pad_i,r,j] = mask
 
 
 
