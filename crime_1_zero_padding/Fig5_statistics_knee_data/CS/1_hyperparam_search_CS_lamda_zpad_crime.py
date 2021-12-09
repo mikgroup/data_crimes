@@ -1,29 +1,34 @@
+'''
+This code demonstrates subtle crime I with Compressed sensing, for knee Proton Density data.
 
-# TODO: remove the unnecessary "R" dimension from here and from the next code, which reads the results
-# TODO: remove the "small" dataset option
+Before running it, run the script crime_1_zero_padding/Fig5../data_prep/data_prep_zero_pad_crime.py to prepare the database.
+
+Make sure that the data path defined here as "basic_data_folder" is identical to the output path defined
+ in the data preparation script.
+
+(c) Efrat Shimron (UC Berkeley, 2021)
+'''
+
 
 ##########################################################################################
 import os
 import numpy as np
 import h5py
-import sys
-# add path to functions library - when running on mikQNAP
-sys.path.append("/mikQNAP/efrat/1_inverse_crimes/1_mirror_PyCharm_CS_MoDL_merged/SubtleCrimesRepo/")
-
 import matplotlib.pyplot as plt
 import sigpy as sp
 from sigpy import mri as mr
 from functions.error_funcs import error_metrics
 from functions.sampling_funcs import gen_2D_var_dens_mask
 
-
-
-sys.path.append("/home/efrat/anaconda3/")
-sys.path.append("/home/efrat/anaconda3/lib/python3.7/site-packages/")  # path to sigpy
+#sys.path.append("/home/efrat/anaconda3/")
+#sys.path.append("/home/efrat/anaconda3/lib/python3.7/site-packages/")  # path to sigpy
 
 #################################################################################
 ## Experiment set-up
 #################################################################################
+
+# NOTICE: the next path should be identical to the output path in the script crime_1_../Fig5../data_prep/data_prep_zero_pad_crime.py
+basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v18/"
 
 data_type = 'val' # validation data is used for calibrating the params
 im_type_str = 'full_im'  # Options: 'full_im' / 'blocks' (blocks are used for training Deep Learning models, not for CS & DictL).
@@ -48,23 +53,15 @@ data_filename = 'knee_lamda_calib_R{}_num_slices{}_Nsamp{}'.format(R_vec[0],num_
 # #################################################################################
 # ##                              Initialize arrays & dicts
 # #################################################################################
-
-
-
-#lamda = 1e-5  # calibrated for the FastMRI knee data
 lamda_vec = np.array([1e-8,1e-9,1e-7, 1e-6, 1e-5,  1e-4, 1e-3, 1e-2,1e-1])
 lamda_vec = np.sort(lamda_vec)
 
-#lamda_vec = np.array([1e-7, 1e-6, 1e-5, 1e-4, 1e-3])
 
 gold_dict = {}
 recs_dict = {}
 masks_dict = {}
 
 NRMSE_arr = np.empty([num_slices, pad_ratio_vec.shape[0], R_vec.shape[0], sampling_type_vec.shape[0],lamda_vec.shape[0]])
-#SSIM_arr  = np.empty([num_slices, pad_ratio_vec.shape[0], R_vec.shape[0], sampling_type_vec.shape[0]])
-
-small_dataset_flag = 0
 
 figs_folder = 'figs'
 if not os.path.exists(figs_folder):
@@ -80,14 +77,6 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
 
     t = 0 # counts loaded scans. each scan contains multiple slices.
     ns = 0 # counts loaded slices
-
-
-    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v18" # TODO: remove the "v18" or replace the mikQNAP path with another one
-
-    if small_dataset_flag == 1:
-        basic_data_folder = basic_data_folder + '_small/'
-    else:
-        basic_data_folder = basic_data_folder + '/'
 
     data_path = basic_data_folder + data_type + "/pad_" + str(
         int(100 * pad_ratio)) + "/" + im_type_str + "/"
