@@ -71,7 +71,7 @@ The Dictionary Learning algorithm implementation is based on Jon Tamir's [ISMRM 
 
 ## Terms of use
 
-This repository may be used only for research/educational purpose, not clinical diagnosis.
+This repository is published under the MIT license. It may be used only for research/educational purpose. It may not be used for clinical diagnosis or any other clinical purpose.
 
 ## Citation
 
