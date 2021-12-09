@@ -1,8 +1,12 @@
-# TODO: add explanations
-# TODO: remove the "small" data option
+'''
+This code demonstrates prepares processed version of the raw data (knee Proton Density data from FastMRI) for the
+CS, DictL and DL experiments of subtle data crime 1.
 
+Once you define the desired data path in the basic_out_folder here, make sure to update it in the scripts of the above experiments.
 
-import sys
+(c) Efrat Shimron (UC Berkeley, 2021)
+'''
+
 import numpy as np
 import os
 import h5py
@@ -26,7 +30,7 @@ pad_ratio_vec = np.array([1])  # Define the desired padding ratios
 #################################### data split ###############################################
 # NOTICE: the original FastMRI database is divided to train/val/test data.
 # The train & val datasets are fully-sampled, but the test data is subsampled.
-# Since we need fully-sampled data for training the models, we will split the FastMRI train data into train & test data.
+# Since we need fully-sampled data for training the models, we wjpeg_data_prep.pyll split the FastMRI train data into train & test data.
 # Val data will remain val data.
 
 FastMRI_train_folder = "/mikQNAP/NYU_knee_data/multicoil_train/"
