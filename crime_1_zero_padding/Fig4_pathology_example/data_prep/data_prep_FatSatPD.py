@@ -1,12 +1,11 @@
 '''
-This file loads fully-sampled multi-coil knee data (from the FastMRI database and prepares the data for our
-zero-padding experiments. It also splits the data into training, validation and test sets.
+This code takes raw data (knee Proton Density data from FastMRI) and creates processed datasets for the
+CS, DictL and DL experiments of subtle data crime 1. It also splits the data into training, validation and test sets.
 
 NOTICE: you should update the variable FatSat_processed_data_folder to YOUR desired path.
 
 (c) Efrat Shimron, UC Berkeley, 2021.
 '''
-
 
 
 # add folder above (while running on mikQNAP):
@@ -20,7 +19,16 @@ from functions.utils import zpad_merge_scale
 import matplotlib.pyplot as plt
 
 
-# update the next path to YOUR desired path.
+
+######################################################################################################################
+#                                             Set data paths to YOUR paths
+######################################################################################################################
+
+# Download the data from FastMRI and set the following paths to YOUR paths:
+FastMRI_train_folder = "/mikQNAP/NYU_knee_data/multicoil_train/"
+FastMRI_val_folder = "/mikQNAP/NYU_knee_data/multicoil_val/"
+
+# Set the next path to YOUR desired output path.
 FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v19_FatSatPD/"
 
 ######################################################################################################################
@@ -30,21 +38,18 @@ FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_z
 N_train_datasets = 300
 N_val_datasets = 10
 N_test_datasets = 7
-pad_ratio_vec = np.array([1,1.25,1.5,1.75,2])  # Define the desired padding ratios
+pad_ratio_vec = np.array([1,1.25,1.5,1.75,2])  # Define the desired kspace zero-padding ratio values
 
 
 #################################### data split ###############################################
 # NOTICE: the original FastMRI database is divided to train/val/test data.
 # The train & val datasets are fully-sampled, but the test data is subsampled.
 # Since we need fully-sampled data for training the models, we will split the FastMRI train data into train & test data.
-# Val data will remain val data.
+# Val data will remain val data and will be used only for hyper parameter calibration.
 
-FastMRI_train_folder = "/mikQNAP/NYU_knee_data/multicoil_train/"
-FastMRI_val_folder = "/mikQNAP/NYU_knee_data/multicoil_val/"
-
-
-FastMRI_train_folder_files = os.listdir("/mikQNAP/NYU_knee_data/multicoil_train/")
-FastMRI_val_folder_files = os.listdir("/mikQNAP/NYU_knee_data/multicoil_val/")
+# create file lists
+FastMRI_train_folder_files = os.listdir(FastMRI_train_folder )
+FastMRI_val_folder_files = os.listdir(FastMRI_val_folder )
 
 # Split the LISTS of FastMRI training files into two lists: train & test files.
 train_files_list = FastMRI_train_folder_files[0:800] # There are 973 scans in total. We reserve the last 173 scans for test data.
@@ -73,6 +78,7 @@ print('N_available_val_scans=',N_available_val_scans)
 print('N_available_test_scans=',N_available_test_scans)
 
 
+# initialize counters
 N_PD_scans_train = 0
 N_PD_scans_val = 0
 N_PD_scans_test = 0
@@ -83,7 +89,10 @@ N_imgs_test = 0
 
 n_imgs = 0
 
-for data_i in np.array([4]):  # 0 = train, 1 = val, 2 = test, 3 = pathology case I, 4 = pathology case II
+#########################################################################################
+
+
+for data_i in range(5):  # 0 = train, 1 = val, 2 = test, 3 = pathology case I, 4 = pathology case II
     if data_i == 0:  # prep training data
         original_files_folder = FastMRI_train_folder
         original_files_list = train_files_list
@@ -93,16 +102,12 @@ for data_i in np.array([4]):  # 0 = train, 1 = val, 2 = test, 3 = pathology case
     elif data_i == 1:  # prep validation data
         original_files_folder = FastMRI_val_folder
         original_files_list = val_files_list
-        #home_dir = FastMRI_val_folder
-        #home_dir_files = FastMRI_val_folder_files
         N_wanted_scans = N_val_datasets
         data_type = 'val'
         im_type_vec = np.array([0, 1])  # 0 = full images, 1 = blocks
     elif data_i == 2: # prep test data
         original_files_folder = FastMRI_train_folder     #NOTICE: as explained above, we divided the LIST of files in the FastMRI train folder into lists of training & test files
         original_files_list = test_files_list
-        #home_dir = home_dir_test
-        #home_dir_files = home_dir_test_files
         N_wanted_scans = N_test_datasets
         data_type = 'test'
         im_type_vec = np.array([0])  # inference of the deep-learning method is done for full-size images, so block are not needed
@@ -195,16 +200,6 @@ for data_i in np.array([4]):  # 0 = train, 1 = val, 2 = test, 3 = pathology case
                 print(f'n_PD_scans (valid scans) = {n_PD_scans}')
                 print(f'n_imgs (saved slices)={n_imgs}')
 
-                # print('n_slices_to_store=', n_slices_to_store)
-
-                # N_saved_images += N_saved_images  # update the total number of saved images (for documentation)
-
-                # if data_type == 'test':
-                #     N_PD_scans_train += N_PD_scans_train
-                # elif data_type == 'val':
-                #     N_PD_scans_val += N_PD_scans_val
-                # elif data_type == 'test':
-                #     N_PD_scans_test += N_PD_scans_test
 
                 # NOTICE: we must iterate on pad_ratio first (before iterating on slices), because this codes saves
                 # multi-slice padded data. All the slices must be padded with the same zero-padding rate.
