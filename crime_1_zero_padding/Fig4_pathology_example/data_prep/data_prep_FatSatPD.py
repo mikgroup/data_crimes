@@ -1,8 +1,16 @@
 '''
-This code takes raw data (knee Proton Density data from FastMRI) and creates processed datasets for the
-CS, DictL and DL experiments of subtle data crime 1. It also splits the data into training, validation and test sets.
+This code takes raw data (knee Proton Density data from FastMRI), extracts Fat-Sat data (i.e. data with label
+'CORPDFS_FBK'), and creates processed datasets for the DL experiments of subtle data crime 1 that are shown
+in Figure 4 and in Figure 8a. Notice that only Fat-Sat data is used for these examples, because pathology is
+usually observed in such scans.
 
-NOTICE: you should update the variable FatSat_processed_data_folder to YOUR desired path.
+The code also splits the data into training, validation and test sets. The two images that contain pathology
+and were displayed in the paper are saved as separate test sets.
+
+NOTICE: you should update the following variables to YOUR desired path (see first code cell):
+FastMRI_train_folder    # input folder
+FastMRI_val_folder      # input folder
+FatSat_processed_data_folder  # desired output folder
 
 (c) Efrat Shimron, UC Berkeley, 2021.
 '''
