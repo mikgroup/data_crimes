@@ -65,7 +65,7 @@ test_files_list =  FastMRI_train_folder_files[800::]
 
 val_files_list = FastMRI_val_folder_files
 
-# Remove the 2 pathology examples from the lists of training files. The pathologies will be used separately, as test cases.
+# Here we remove the 2 pathology examples from the lists of training files. The pathologies will be used separately, as test cases.
 if 'file1000425.h5' in train_files_list:
     print(f'pathology 1 is in train_files_list')
     train_files_list.remove('file1000425.h5')

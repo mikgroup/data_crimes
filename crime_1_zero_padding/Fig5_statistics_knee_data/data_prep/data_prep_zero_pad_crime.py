@@ -1,11 +1,19 @@
 '''
-This code demonstrates prepares processed version of the raw data (knee Proton Density data from FastMRI) for the
-CS, DictL and DL experiments of subtle data crime 1.
+This code takes raw data (knee Proton Density data from FastMRI), extracts Proton Density (PD) data (i.e. data with
+label 'CORPD_FBK'), and creates processed datasets for the DL experiments of subtle data crime 1 that are shown
+in Figure 5.
 
-Once you define the desired data path in the basic_out_folder here, make sure to update it in the scripts of the above experiments.
+The code also splits the data into training, validation and test sets. The two images that contain pathology
+and were displayed in the paper are saved as separate test sets.
 
-(c) Efrat Shimron (UC Berkeley, 2021)
+NOTICE: you should update the following variables to YOUR desired path (see first code cell):
+FastMRI_train_folder    # input folder
+FastMRI_val_folder      # input folder
+FatSat_processed_data_folder  # desired output folder
+
+(c) Efrat Shimron, UC Berkeley, 2021.
 '''
+
 
 import numpy as np
 import os
@@ -14,12 +22,23 @@ import sigpy as sp
 from functions.utils import zpad_merge_scale,extract_block
 import matplotlib.pyplot as plt
 
+
+
+######################################################################################################################
+#                                      Set data paths to YOUR paths
+######################################################################################################################
+
+FastMRI_train_folder = "/mikQNAP/NYU_knee_data/multicoil_train/"
+FastMRI_val_folder = "/mikQNAP/NYU_knee_data/multicoil_val/"
+
+# Set this to your own path - where to save the output files:
+basic_out_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v18/"
+
+
 ######################################################################################################################
 #                                                   Prep data
 ######################################################################################################################
 
-# Set this to your own path - where to save the output files:
-basic_out_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v18/"
 
 N_train_datasets = 300
 N_val_datasets = 10
@@ -33,11 +52,8 @@ pad_ratio_vec = np.array([1])  # Define the desired padding ratios
 # Since we need fully-sampled data for training the models, we wjpeg_data_prep.pyll split the FastMRI train data into train & test data.
 # Val data will remain val data.
 
-FastMRI_train_folder = "/mikQNAP/NYU_knee_data/multicoil_train/"
-FastMRI_val_folder = "/mikQNAP/NYU_knee_data/multicoil_val/"
-
-FastMRI_train_folder_files = os.listdir("/mikQNAP/NYU_knee_data/multicoil_train/")
-FastMRI_val_folder_files = os.listdir("/mikQNAP/NYU_knee_data/multicoil_val/")
+FastMRI_train_folder_files = os.listdir(FastMRI_train_folder )
+FastMRI_val_folder_files = os.listdir(FastMRI_val_folder )
 
 # Split the LISTS of FastMRI training files into two lists: train & test files.
 train_files_list = FastMRI_train_folder_files[0:800] # There are 973 scans in total. We reserve the last 173 scans for test data.
@@ -45,8 +61,7 @@ test_files_list =  FastMRI_train_folder_files[800::]
 
 val_files_list = FastMRI_val_folder_files
 
-# Remove the 2 pathology examples from the lists of training files. The pathologies will be used separately, as test cases.
-
+# Here we remove the 2 pathology examples from the lists of training files. The pathologies will be used separately, as test cases (for Fig 4 & Fig 8a).
 if 'file1000425.h5' in train_files_list:
     print(f'pathology 1 is in train_files_list')
     train_files_list.remove('file1000425.h5')
@@ -77,46 +92,26 @@ N_imgs_test = 0
 
 n_imgs = 0
 
-for data_i in np.array([0]):  #range(3):  # 0 = train, 1 = val, 2 = test, 3 = pathology I, 4 = pathology II
+for data_i in range(3):  # 0 = train, 1 = val, 2 = test, 3 = pathology I, 4 = pathology II
     if data_i == 0:  # prep training data
         original_files_folder = FastMRI_train_folder
         original_files_list = train_files_list
         N_wanted_scans = N_train_datasets  # the first 10 scans will be used for test data. Each scan contains 20-30 slices so it will give us 200-300 test images.
         data_type = 'train'
-        im_type_vec = np.array([ 1]) #TODO: change this back to [0,1]    # 0 = full images, 1 = blocks
+        im_type_vec = np.array([0, 1])   # 0 = full images, 1 = blocks
     elif data_i == 1:  # prep validation data
         original_files_folder = FastMRI_val_folder
         original_files_list = val_files_list
-        #home_dir = FastMRI_val_folder
-        #home_dir_files = FastMRI_val_folder_files
         N_wanted_scans = N_val_datasets
         data_type = 'val'
         im_type_vec = np.array([0, 1])  # 0 = full images, 1 = blocks
     elif data_i == 2: # prep test data
         original_files_folder = FastMRI_train_folder     #NOTICE: as explained above, we divided the LIST of files in the FastMRI train folder into lists of training & test files
         original_files_list = test_files_list
-        #home_dir = home_dir_test
-        #home_dir_files = home_dir_test_files
         N_wanted_scans = N_test_datasets
         data_type = 'test'
         im_type_vec = np.array([0])  # inference of the deep-learning method is done for full-size images, so block are not needed
-    elif data_i == 3:  # prep 1st pathology example - it's taken from the training set
-        # NOTE: THIS SCAN IS NOT Proton-Density, so the network wasn't trained for it.
-        original_files_folder = FastMRI_train_folder
-        original_files_list = ['file1000425.h5']
-        N_wanted_scans = np.array([1])
-        data_type = 'pathology_1'
-        subject_str = 'subject 1'
-        im_type_vec = np.array([0])  # inference of the deep-learning method is done for full-size images, so block are not needed
-    elif data_i == 4:  # prep 1st pathology example - it's taken from the training set
-        # NOTE: THIS SCAN IS NOT Proton-Density, so the network wasn't trained for it.
-        original_files_folder = FastMRI_train_folder
-        original_files_list = ['file1002455.h5']
-        N_wanted_scans = np.array([1])
-        data_type = 'pathology_2'
-        im_type_vec = np.array(
-            [0])  # inference of the deep-learning method is done for full-size images, so block are not needed
-        subject_str = 'subject 2'
+
 
 
     print('=======================================================')
@@ -276,44 +271,6 @@ for data_i in np.array([0]):  #range(3):  # 0 = train, 1 = val, 2 = test, 3 = pa
 
                                 im_block = extract_block(im_mag_scaled,block_asp_ratio_x,block_asp_ratio_y,x_margin,y_margin)
 
-                                # TODO: remove the next code section, it was moved to functions.utils.extract_block
-                                # # block size = 0.2*im_size
-                                # NX_block = int(0.2 * NX_padded)
-                                # NY_block = int(0.2 * NY_padded)
-                                #
-                                # x_max_offset = NX_padded - NX_block - x_margin - 25
-                                # y_max_offset = NY_padded - NY_block - y_margin - 25
-                                #
-                                # assert x_max_offset > x_margin, 'x_max_offset<y_margin'
-                                # assert y_max_offset > y_margin, 'y_max_offset<y_margin'
-                                #
-                                # x_mid = int(NX / 2)
-                                # y_mid = int(NY / 2)
-                                #
-                                # valid_block_flag = 0
-                                #
-                                # # Next we extract a block from the image and check that it contains some signal, i.e. that it's not empty.
-                                # # If the block is "empty" (i.e. contains mostly noise) we will try to extract another block. Max 50 trials.
-                                # # If after 50 trials the block is still not good we'll store it anyway.
-                                # trial_cnt = 0
-                                # while (valid_block_flag == 0) & (trial_cnt <= 50):
-                                #     trial_cnt += 1
-                                #
-                                #     x_i = np.random.randint(x_margin, x_max_offset, size=1)  # offset in x axis
-                                #     y_i = np.random.randint(y_margin, y_max_offset, size=1)  # offset in x axis
-                                #     im_block = im_mag_scaled[x_i[0]:(x_i[0] + NX_block), y_i[0]:(y_i[0] + NY_block)]
-                                #
-                                #     if np.max(im_block) > 0.5 * np.max(im_mag_scaled):
-                                #         # print('block is OK')
-                                #         valid_block_flag = 1
-                                #     else:
-                                #         print('block contains mostly noise - not good - extract a different one')
-                                #
-                                # # print('block size:')
-                                # # print(im_block.shape)
-                                #
-                                # img = im_block
-
                                 img = im_block
 
                                 fig = plt.figure()
@@ -339,14 +296,6 @@ for data_i in np.array([0]):  #range(3):  # 0 = train, 1 = val, 2 = test, 3 = pa
                             ################### compute k-space of the zero-padded image/block #####################
 
                             kspace_slice = sp.fft(img)
-
-                            #TODO: remove the next
-                            fig = plt.figure()
-                            plt.imshow(np.log(np.abs(kspace_slice)),cmap="gray")
-                            plt.suptitle(f'FastMRI {data_type} data - file {t}, slice {s}, ksp of RSS of fully-sampled data')
-                            plt.title({filename_h5})
-                            plt.show()
-
 
                             if (s_i == 0) & (n_PD_scans == 1):
                                 fig = plt.figure()
@@ -410,9 +359,6 @@ for data_i in np.array([0]):  #range(3):  # 0 = train, 1 = val, 2 = test, 3 = pa
     elif data_i == 2: # test data
         N_PD_scans_test = n_PD_scans
         N_imgs_test = n_imgs
-    #elif data_i == 3:  # pathology 1
-    #elif data_i == 4:  # pathology 2
-
 
 
 ########### save meta-data ##################
