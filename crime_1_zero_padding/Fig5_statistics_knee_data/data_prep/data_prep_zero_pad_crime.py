@@ -9,7 +9,7 @@ and were displayed in the paper are saved as separate test sets.
 NOTICE: you should update the following variables to YOUR desired path (see first code cell):
 FastMRI_train_folder    # input folder
 FastMRI_val_folder      # input folder
-FatSat_processed_data_folder  # desired output folder
+basic_out_folder        # desired output folder
 
 (c) Efrat Shimron, UC Berkeley, 2021.
 '''
@@ -340,11 +340,11 @@ for data_i in range(3):  # 0 = train, 1 = val, 2 = test, 3 = pathology I, 4 = pa
                         if not os.path.exists(out_folder):
                             os.makedirs(out_folder)
 
-                        # Save data in h5 file
-                        h5f = h5py.File(out_folder + '%d.h5' % (n_PD_scans), 'w')
-                        h5f.create_dataset('kspace', data=kspace_coils_merged_padded_multi_slice)
-                        h5f.create_dataset('reconstruction', data=images_coils_merged_padded_multi_slice)  #TODO: change this to "ref_img" and change the code that loads this in the training & test scripts
-                        h5f.close()
+                        # # Save data in h5 file
+                        # h5f = h5py.File(out_folder + '%d.h5' % (n_PD_scans), 'w')
+                        # h5f.create_dataset('kspace', data=kspace_coils_merged_padded_multi_slice)
+                        # h5f.create_dataset('reconstruction', data=images_coils_merged_padded_multi_slice)  #TODO: change this to "ref_img" and change the code that loads this in the training & test scripts
+                        # h5f.close()
 
             if (t == (N_available_scans - 1)) | (n_PD_scans >= N_wanted_scans):
                 break
