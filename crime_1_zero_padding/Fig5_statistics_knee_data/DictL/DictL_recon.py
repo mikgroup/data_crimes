@@ -1,58 +1,35 @@
-# Instructions - how to calibrate parameters by sending many parallel runs:
-# 1. gen_commands.sh - edit this script using linux only, DO NOT EDIT IT IN WINDOWS/PYCHARM! it donesn't compile afterwards.
-# 2. make it excutable by running:
-# 3. run it: ./gen_commands.sh
-#    This will create a scritp named run.sh
-# 4. Mkae the print_timestamp script exectuable by running:
-#    chmod +x print_timestamp.sh
-# 5. TODO: explain here that "gen_commands" will create different run files for each pad_ratio, and they can be sent separately
-# In order to send 20 runs in parallel, run this (in the linux command line):
-# cat run.sh | xargs -n1 -I{} -P20 bash -c {} > log.txt
+'''
+This code implements the DictL algorithm.
+It is based on Jon Tamir's ISMRM tutorial: https://github.com/utcsilab/dictionary_learning_ismrm_2020
 
-####################################################################
-# version documentation:
-# version 5 - (1) now using data prepared by data_prep_v17,
-#             (2) data is taken from the VALIDATION set only
-#             (3) pad_ratio is added as an input variable - this makes the script specific to zero-padding experiments
-#             (4) lamda is added as an input argument to this script, and also as an input to the script functions.dict_learn_funcs.DictionaryLearningMRI (previously it used the default value)
-#             (4) num_slices = 10 by default, i.e. the script runs computations for 10 images and saves both their specific NRMSEs and the average NRMSE over these images.
-#             (5) the default of block_shape was changed from [8,8] to 8, in order to make it a single input variable. later in the code it's converted from 8 to [8,8]
-#             (6) the iterations over R and pad_ratio_vec were cancelled. Instead, we take a single value for R and a value for pad_ratio from the input args
-# version 6 - identical to version 5
-# version 7 - identical to version 6
-# version 8 - identical to version 8
-##########################################################################################
-import os
+In the current version the algorihtm was adapted to any patch size.
+
+Note:
+    - Before running the script you should updae the path to the data folder in basic_data_folder.
+    - The script is meant to be called from another script, with input arguments (i.e. with the optimal parameters that
+      were found in the grid search)
+    - The implementation is meant for educational purposes, hence it is not very effecient; the runtime might be long.
+
+(c) Efrat Shimron (UC Berkeley) & Jon Tamir (UT Austin) (2021)
+
+'''
+
 import numpy as np
 import h5py
-import sys
-from random import random
-
-# add path to functions library - when running on mikQNAP
-sys.path.append("/mikQNAP/efrat/1_inverse_crimes/1_mirror_PyCharm_CS_MoDL_merged/SubtleCrimesRepo/")
-
+import os
 import matplotlib.pyplot as plt
 import sigpy as sp
 from functions.error_funcs import error_metrics
-
 from functions.sampling_funcs import gen_2D_var_dens_mask
-
-from functions.dict_learn_funcs import DictionaryLearning, SparseDecom, DictionaryLearningMRI
-from data.c1_data_prep_knee_FastMRI_random_shifts.zpad_funcs import zpad_merge_scale #TODO: replace this with preprocessed data v17
+from functions.dict_learn_funcs import DictionaryLearningMRI
 from optparse import OptionParser
-import argparse
-
-sys.path.append("/home/efrat/anaconda3/")
-sys.path.append("/home/efrat/anaconda3/lib/python3.7/site-packages/")  # path to sigpy
 
 # limiting the number of CPUs that the process can take
 import mkl
-#mkl.set_num_threads(1)  # the number in the brackets determines the number of CPUs. 1 is recommended for the DictL algorithm! Otherwise there's a lot of overhead (when the run is spread accross multiple cpus) and the comptuation time becomes longer.
+
 
 def get_args():
-    #parser = argparse.ArgumentParser(description="Script for Dictionary Learning.")
     parser = OptionParser()
-
 
     parser.add_option('--R', '--R', type='int', default=[4], help='desired R')
     parser.add_option('--nnz', '--num_nonzero_coeffs', type='int', default=7, help='num_nonzero_coeffs controls the sparsity level when  Dictionary Learning runs with A_mode=''omp'' ')
@@ -83,7 +60,7 @@ def get_args():
 if __name__ == '__main__':
     args = get_args()
 
-    #print(args)
+    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v18/"  # TODO: change the folder to your folder
 
     # Create log directory - this is useful when sending many runs in parallel
     logdir = args.logdir
@@ -91,7 +68,6 @@ if __name__ == '__main__':
         os.makedirs(args.logdir)
 
     # Dictionary-Learning algorithm parameters
-    #num_nonzero_coeffs = args.nnz
     nnz_lamda = args.nnz
     max_iter = args.max_iter
     num_filters = args.num_filters
@@ -114,7 +90,6 @@ if __name__ == '__main__':
     im_type_str = 'full_im'  # Options: 'full_im' / 'blocks' (blocks are used for training Deep Learning models, not for CS & DictL).
 
     # hard-coded variables
-    #n_proc = 40  # number of cpu cores to use, when possible
     device = sp.cpu_device  # which device to use (not all is supported on GPU)
     mode = 'omp' # for the dictionary learning algorithm
 
@@ -149,12 +124,6 @@ if __name__ == '__main__':
     ns = 0 # counts loaded slices
 
 
-    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v18"  # TODO: change the folder
-
-    if small_dataset_flag == 1:
-        basic_data_folder = basic_data_folder + '_small/'
-    else:
-        basic_data_folder = basic_data_folder + '/'
 
     data_path = basic_data_folder + data_type + "/pad_" + str(
         int(100 * pad_ratio)) + "/" + im_type_str + "/"
@@ -281,11 +250,7 @@ if __name__ == '__main__':
                 break
 
 
-
-
 print(f'done - n_slices={ns}')
 print('saving NRMSE and SSIM arrays')
 filename = logdir + "/res_NRMSE_SSIM"
 np.savez(filename,Dict_NRMSE_arr=Dict_NRMSE_arr,Dict_SSIM_arr=Dict_SSIM_arr)  # notice: the names of the stored arrays begin with "Dict", not "DictL" (for convenience only)
-
-#,CS_NRMSE_arr=CS_NRMSE_arr,CS_SSIM_arr=CS_SSIM_arr)

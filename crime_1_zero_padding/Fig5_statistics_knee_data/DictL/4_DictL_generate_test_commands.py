@@ -1,13 +1,12 @@
 '''
 This script prepares the python commands for the DictL test runs (Fig5 in the paper).
 
-The commands should be sent manually from the linux command line. The advantage of this approach is that these runs
-can be sent in parallel to many CPUs, on different servers.
+You should "copy-paste" them and send them manually from the linux command line.
 
 Alternatively, it's possible to use the DictL_recon script and run everything in python using loops. However, this
 computation will probably take several days.
 
-(c) Efrat Shimron, UC Berkeley, 2021
+(c) Efrat Shimron (UC Berkeley) (2021)
 '''
 
 import numpy as np

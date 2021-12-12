@@ -11,7 +11,16 @@ Instructions - how to calibrate the DictL parameters by sending many parallel ru
 5. Send each of the run_xxxx.sh scripts manually. Notice: each of them contains dozens of python runs. Every set of
    runs can take a very long time.
 
-(c) Efrat Shimron (UC Berkeley, 2021)
+The advantage of the above approach is that these runs can be sent in parallel to many CPUs, on different servers.
+
+Tip:
+In order to send 20 runs in parallel (i.e. to 20 CPUs on one server), run this (in the linux command line):
+cat run_xxxxxx.sh | xargs -n1 -I{} -P20 bash -c {} > log.txt
+
+Notice that this huge set of runs is expected to take a VERY LONG TIME! In our lab it was conducted over 200 CPUs in
+parallel, and it required about 4 weeks.
+
+(c) Efrat Shimron (UC Berkeley) & Jon Tamir (UT Austin) (2021)
 
 '''
 

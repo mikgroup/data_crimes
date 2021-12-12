@@ -18,14 +18,18 @@ will be created automatically).
 3. Then, run the above scripts as follows:
 ./run_pad_1.75_strong.sh
 
-The advantage of this approach is that these runs can be sent in parallel to many CPUs, on different servers.
+The advantage of the above approach is that these runs can be sent in parallel to many CPUs, on different servers.
+Tip:
+In order to send 20 runs in parallel (i.e. to 20 CPUs on one server), run this (in the linux command line):
+cat run_xxxxxx.sh | xargs -n1 -I{} -P20 bash -c {} > log.txt
 
 Notice that this huge set of runs is expected to take a VERY LONG TIME! In our lab it was conducted over 200 CPUs in
-parallel for 4 weeks in a row.
+parallel, and it required about 4 weeks.
 
-If you don't have the required resources, you can skip the grid search steps and use the optimal parameters that we found.
-However, please notice that they were calibrated for the datasets and sampling masks used in this paper, and that every
-new dataset/sampling mask will require a new hyperparam search.
+If you don't have the required resources, you can skip the grid search stage (i.e. skip scripts 1-3 in this fodler)
+and use the optimal parameters that we found, which are stored in the file opt_params_dict.npy
+However, please notice that they were calibrated for our specific datasets and sampling schemes, and that usage of every
+other dataset/sampling scheme will require a new hyperparam search.
 
 See more instructions in the next script.
 
