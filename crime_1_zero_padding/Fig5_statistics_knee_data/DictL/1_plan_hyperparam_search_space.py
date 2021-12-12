@@ -1,10 +1,36 @@
-# useful commands for checking the runs:
-# 1) how to find number of directions with the string "strong_VD_pad_ratio2" in their name:
-# find strong_VD_pad_ratio_2* -type d | wc -l
-# 2) how to find the number of above directions that have files with ".npz" extension:
-# find logs/weak_VD_pad_ratio_2*/*.npz -type f | wc -l
+'''
+This code  is used only for *planning* the DictL hyperparameter search space, not for running it.
+It does not save any output. I used it only for planning the grid search and estimating the number of required runs.
 
-# TODO: edit this script and add explanations about "gen commands" etc.
+To conduct the hyperparam search, do this:
+1. Edit the gen_commands.sh script located in this folder. Notice that it is a bash script - DO NOT edit it in PyCharm
+or in any windows software, because that could create problems. The best practice is to edit it directly from a linux
+or Windows Subsystem for Linux (WSL) terminal.
+
+2. After editing, run it as follows:
+./gen_commands.sh
+This will create a set of other bash scripts, with names such as run_pad_1.75_strong.sh - this specific script will
+run a grid search for padding ratio of 1.75 and strong variable density.
+Each of these scripts will contain lines for sending dozens of other runs, which are required for the hyperparam search.
+Each run will be conducted separaetly, and the results will be saved in a subfolder of the logs directory (the subfolders
+will be created automatically).
+
+3. Then, run the above scripts as follows:
+./run_pad_1.75_strong.sh
+
+The advantage of this approach is that these runs can be sent in parallel to many CPUs, on different servers.
+
+Notice that this huge set of runs is expected to take a VERY LONG TIME! In our lab it was conducted over 200 CPUs in
+parallel for 4 weeks in a row.
+
+If you don't have the required resources, you can skip the grid search steps and use the optimal parameters that we found.
+However, please notice that they were calibrated for the datasets and sampling masks used in this paper, and that every
+new dataset/sampling mask will require a new hyperparam search.
+
+See more instructions in the next script.
+
+(c) Efrat Shimron (UC Berkeley, 2021)
+'''
 
 
 import numpy as np
@@ -38,7 +64,6 @@ max_iter_vec = np.arange(max_iter_MIN,max_iter_MAX,max_iter_STEP)
 max_iter_vec = np.append(max_iter_vec,max_iter_MAX) # add the last element to the array
 
 
-#lamda_vec= np.array([1e-4,1e-3,0.01,1e-2,1e-1])
 lamda_vec= np.array([1e-5,1e-4,1e-3,1e-2])
 
 

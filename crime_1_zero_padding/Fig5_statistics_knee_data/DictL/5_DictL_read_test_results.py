@@ -1,7 +1,9 @@
-# This script reads the results of the previous script, 4_DictL_generate_test_commands.py, and prepare a graph that shows the
-# statistics of the DictL test runs.
+'''
+This script reads the results of the previous script, 4_DictL_generate_test_commands.py, and prepare a graph that shows the
+statistics of the DictL test runs (for Fig5 in the paper).
 
-# (c) Efrat Shimron, UC Berkeley, 2021
+(c) Efrat Shimron, UC Berkeley, 2021
+'''
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -14,29 +16,9 @@ N_examples = 122 # the number of slices in our test set
 pad_ratio_vec = np.array([1,1.25,1.5,1.75,2])
 sampling_type_vec = np.array([1,2])  # 0 = random, 1 = strong var-dens, 2 = weak var-dens
 
-
 # initialize arrays
 DictL_NRMSE_test_set = np.zeros((N_examples,pad_ratio_vec.shape[0],sampling_type_vec.shape[0]))
 DictL_SSIM_test_set  = np.zeros((N_examples,pad_ratio_vec.shape[0],sampling_type_vec.shape[0]))
-
-# NRMSE_test_set_av  = np.zeros((pad_ratio_vec.shape[0],sampling_type_vec.shape[0]))
-# NRMSE_test_set_std = np.zeros((pad_ratio_vec.shape[0],sampling_type_vec.shape[0]))
-# SSIM_test_set_av   = np.zeros((pad_ratio_vec.shape[0],sampling_type_vec.shape[0]))
-# SSIM_test_set_std  = np.zeros((pad_ratio_vec.shape[0],sampling_type_vec.shape[0]))
-
-#
-# #################### prep for plots #################
-#
-# # prepare x ticks labels for the NRMSE and SSIM graphs
-# x = pad_ratio_vec
-# x_ticks_labels = []
-# for i in range(pad_ratio_vec.shape[0]):
-#     x_ticks_labels.append('x{}'.format(pad_ratio_vec[i]))
-#
-#
-# markers=['o', 's', 'v', 'h', '8']
-# #colorslist = ['b','r']
-
 
 
 ################ load data & plot ##################
@@ -50,7 +32,6 @@ for samp_i in range(sampling_type_vec.shape[0]):
     for pad_i, pad_ratio in enumerate(pad_ratio_vec):
         if (pad_ratio==1.0) | (pad_ratio==2.0):
             pad_ratio = int(pad_ratio)
-
 
         logdir = 'test_logs/' + samp_str + '_pad_ratio_{}'.format(pad_ratio)
 

@@ -1,3 +1,13 @@
+'''
+This scripts reads the results that were saved during the hyperparameters grid search.
+
+Notice: before running this script, you need to update all the parameters (e.g. block_shape_MIN, block_shape_MAX etc.)
+such that they will match those that appear in the script gen_commands.sh
+
+(c) Efrat Shimron (UC Berkeley, 2021)
+
+'''
+
 import numpy as np
 
 # DictL parameters:
@@ -32,10 +42,8 @@ lamda_vec= np.array([1e-5,1e-4,1e-3,1e-2])
 # Data & sampling-related parameters:
 
 pad_ratio_vec = np.array([1,1.25,1.5,1.75,2])
-#pad_ratio_vec = np.array([1])
 
 samp_type_vec = np.array([1,2])  # 1 = weak VD, 2 = strong VD
-#samp_type_vec = np.array([2])  # 1 = weak VD, 2 = strong VD
 
 # ------------------ find the lowest NRMSE for each combination of pad_ratio & sampling_type -----------------
 
@@ -94,7 +102,6 @@ for pad_i in range(N_pad_ratio):
 
                             filename = logdir + "res_NRMSE_SSIM.npz"
 
-                            #print(logdir)
 
                             container = np.load(filename,allow_pickle=True)
                             NRMSE_arr = container['Dict_NRMSE_arr']
@@ -102,15 +109,10 @@ for pad_i in range(N_pad_ratio):
 
                             NRMSE_all_params_array[pad_i,samp_i,block_i,num_filter_i,nnz_i,max_iter_i,lamda_i,:] = NRMSE_arr
 
-#filename =
 
 NRMSE_av_over_imgs = np.mean(NRMSE_all_params_array,7)  # compute average over the images axis
 
-
-#dict_chosen_params = {}
-
-#chosen_params_array = np.zeros([N_pad_ratio,N_samp,1,1,1,1,1])
-
+# find & save the optimal hyperparameters
 dict_all = {}
 
 for pad_i in range(N_pad_ratio):
@@ -119,15 +121,12 @@ for pad_i in range(N_pad_ratio):
         pad_ratio = int(pad_ratio)
 
     for samp_i in range(N_samp):
-        #print(f'samp_i={samp_i}')
-        #print(f'samp_type_vec[samp_i]={samp_type_vec[samp_i]}')
+
         if samp_type_vec[samp_i]==1:
             samp_type = 'weak'
         elif samp_type_vec[samp_i]==2:
             samp_type = 'strong'
 
-
-        #chosen_params_array[pad_i,samp_i] = np.zeros([N_pad_ratio, N_samp, 1, 1, 1, 1, 1])
         print('-------')
         dict0 = {}
 
@@ -157,16 +156,3 @@ for pad_i in range(N_pad_ratio):
 
 np.save('opt_params_dict.npy',dict_all)
 
-# min_NRMSE = np.min(NRMSE_array)
-# print('min_NRMSE=',min_NRMSE)
-#
-# inds = np.unravel_index(np.argmin(NRMSE_array, axis=None),NRMSE_array.shape)
-# print(inds)
-#
-# print('values found for min NRMSE:')
-# print('num_filters =',num_filters_VALS[inds[0]])
-# print('max_iters =',max_iter_VALS[inds[1]])
-# print('nnz_VALS =',nnz_VALS[inds[2]])
-
-
-print('done')

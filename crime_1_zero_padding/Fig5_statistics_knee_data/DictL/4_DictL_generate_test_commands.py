@@ -1,11 +1,14 @@
-# This script prepares the python commands for performing the DictL test runs
-# The commands should be sent manually from the linux command line. The advantage of this approach is that these runs
-# can be sent in parallel to many CPUs, on different servers.
+'''
+This script prepares the python commands for the DictL test runs (Fig5 in the paper).
 
-# Alternatively, it's possible to use the DictL_recon script and run everything inside the loops. However, this
-# computation will probably take several days.
+The commands should be sent manually from the linux command line. The advantage of this approach is that these runs
+can be sent in parallel to many CPUs, on different servers.
 
-# (c) Efrat Shimron, UC Berkeley, 2021
+Alternatively, it's possible to use the DictL_recon script and run everything in python using loops. However, this
+computation will probably take several days.
+
+(c) Efrat Shimron, UC Berkeley, 2021
+'''
 
 import numpy as np
 
@@ -50,6 +53,3 @@ for samp_i in range(sampling_type_vec.shape[0]):
         command_str = f'python3 DictL_recon.py --pad_ratio {pad_ratio} --samp_type {samp_str} --lamda {lamda} --block_shape {block_shape} --num_filters {num_filters} --nnz {nnz} --max_iter {max_iter} --num_slices {N_examples} --data_type {data_type_str} --num_cpus {num_cpus} --logdir {logdir}'
         print(command_str)
 
-
-
-#print(container)
