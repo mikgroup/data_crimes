@@ -5,7 +5,7 @@ It is based on Jon Tamir's ISMRM tutorial: https://github.com/utcsilab/dictionar
 In the current version the algorihtm was adapted to any patch size.
 
 Note:
-    - Before running the script you should updae the path to the data folder in basic_data_folder.
+    - Before running the script you should update the path to the data folder in basic_data_folder.
     - The script is meant to be called from another script, with input arguments (i.e. with the optimal parameters that
       were found in the grid search)
     - The implementation is meant for educational purposes, hence it is not very effecient; the runtime might be long.
@@ -60,7 +60,8 @@ def get_args():
 if __name__ == '__main__':
     args = get_args()
 
-    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v18/"  # TODO: change the folder to your folder
+    # Notice: the following path to YOUR folder. The foldername should be the same as the one defined in the script data_prep/data_prep_zero_pad_crime.py
+    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/"
 
     # Create log directory - this is useful when sending many runs in parallel
     logdir = args.logdir
