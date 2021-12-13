@@ -1,10 +1,10 @@
 '''
-This code takes raw data (knee Proton Density data from FastMRI), extracts Proton Density (PD) data (i.e. data with
-label 'CORPD_FBK'), and creates processed datasets for the DL experiments of subtle data crime 1 that are shown
-in Figure 5.
+This code takes raw data (knee multi-coil data from FastMRI), extracts Proton Density (PD) data (i.e. data with
+label 'CORPD_FBK'), and creates processed datasets for the experiments of subtle data crime 2 that are shown
+in Figures 6, 7 and 8b. The data processing pipeline is described in Figure 2b-c.
 
 The code also splits the data into training, validation and test sets. The two images that contain pathology
-and were displayed in the paper are saved as separate test sets.
+(in Figs 4 and 8a) are removed from the training set and saved as separate test sets.
 
 NOTICE: you should update the following variables to YOUR desired path (see first code cell):
 FastMRI_train_folder    # input folder
@@ -21,8 +21,6 @@ import sigpy as sp
 
 # add the project's folder - for access to the functions library:
 sys.path.append("/mikQNAP/efrat/1_inverse_crimes/2_public_repo_mirror_PyCharm/")
-#sys.path.insert(0, "../../../functions/")
-#sys.path.append("../../../functions/")  # add functions folders
 from functions.utils import zpad_merge_scale,extract_block
 import matplotlib.pyplot as plt
 
@@ -36,7 +34,7 @@ FastMRI_train_folder = "/mikQNAP/NYU_knee_data/multicoil_train/"
 FastMRI_val_folder = "/mikQNAP/NYU_knee_data/multicoil_val/"
 
 # NOTICE: set the following path to your own path - where to save the output files:
-basic_out_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/"
+basic_out_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/jpeg_data/"
 
 
 
