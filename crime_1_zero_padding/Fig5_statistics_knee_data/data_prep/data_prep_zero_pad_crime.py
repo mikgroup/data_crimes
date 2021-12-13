@@ -14,11 +14,15 @@ basic_out_folder        # desired output folder
 (c) Efrat Shimron, UC Berkeley, 2021.
 '''
 
-
 import numpy as np
-import os
+import os,sys
 import h5py
 import sigpy as sp
+
+# add the project's folder - for access to the functions library:
+sys.path.append("/mikQNAP/efrat/1_inverse_crimes/2_public_repo_mirror_PyCharm/")
+#sys.path.insert(0, "../../../functions/")
+#sys.path.append("../../../functions/")  # add functions folders
 from functions.utils import zpad_merge_scale,extract_block
 import matplotlib.pyplot as plt
 
@@ -32,7 +36,9 @@ FastMRI_train_folder = "/mikQNAP/NYU_knee_data/multicoil_train/"
 FastMRI_val_folder = "/mikQNAP/NYU_knee_data/multicoil_val/"
 
 # Set this to your own path - where to save the output files:
-basic_out_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v18/"
+#basic_out_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v18/"
+basic_out_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/"
+
 
 
 ######################################################################################################################
@@ -44,7 +50,7 @@ N_train_datasets = 300
 N_val_datasets = 10
 N_test_datasets = 7
 
-pad_ratio_vec = np.array([1])  # Define the desired padding ratios
+pad_ratio_vec = np.array([1,1.25,1.5,1.75,2])  # Define the desired padding ratios
 
 #################################### data split ###############################################
 # NOTICE: the original FastMRI database is divided to train/val/test data.
