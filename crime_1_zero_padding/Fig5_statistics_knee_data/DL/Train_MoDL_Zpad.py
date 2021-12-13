@@ -1,38 +1,27 @@
-# This is based on Ke's notebook Train_MoDL.ipynb
+'''
+This code is used for training the MoDL algorithm on processed versions of the FastMRI multi-coil
+knee data. Notice that after the processing the data becomes magnitude (real-valued), zero-padded
+& single-coil.
 
-##############################################################################################
-# To run this code, use the conda virtual environment "subtle_env"
-# (two identical environments were defined on mikneto or mikshoov)
+To use this code, edit the input arguments and the basic_data_folder variable. This folder
+should be the same as the output folder defined in the script
+crime_1_zero_padding/Fig5_statistics_knee_data/data_prep/data_prep_zero_pad_crime.py
 
-# Example - how to run this script from linux command line:
-# python3 Train_xxxxx.py  --R 4 --pad_ratio 1 --gpu 0 --var_dens_flag 'weak'
-###############################################################################################
-
-# Training data:
-# the data in the folder train/
-# was taken from
-# /mikQNAP/NYU_knee_data/singlecoil_train/
+(c) Efrat Shimron & Ke Wang (UT Berkeley) (2021)
+'''
 
 
-#######################################################################################################
-# documentation:
-# v12 - the type of the input variable "pad_ratio" was changed from int to float, to enable pad_ratio of 1.5 etc.
-# v16 - now using data_prep_v17, which contains a new splitting of the train/val/test data
-# v18 - now using data_prep_v18, which contains 300 training examples. the SAME VAL DATA as in v16 (val dir was copied).
-
-# %matplotlib notebook
 import os, sys
+
+# add the project's folder - for access to the functions library:
+sys.path.append("/mikQNAP/efrat/1_inverse_crimes/2_public_repo_mirror_PyCharm/")
+#sys.path.append("../")  # add folder above
 
 import logging
 import numpy as np
 import torch
-import sigpy as sp
 import torch.nn as nn
 import copy
-from torch.utils.data import DataLoader
-import matplotlib
-
-#matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 from utils import complex_utils as cplx
@@ -40,9 +29,6 @@ from utils.datasets import create_data_loaders #, calc_scaling_factor
 from MoDL_single import UnrolledModel
 from functions.error_funcs import error_metrics
 import argparse
-
-
-
 
 
 def create_arg_parser():
@@ -65,7 +51,6 @@ if __name__ == '__main__':
     else:
         use_multiple_GPUs_flag = 0
 
-    #use_multiple_GPUs_flag = 0
 
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
@@ -83,7 +68,6 @@ if __name__ == '__main__':
     # Hyper parameters
     params = Namespace()
     params.batch_size = 1
-    #params.num_grad_steps = 6  # number of unrolls
     params.num_cg_steps = 8
     params.share_weights = True
     params.modl_lamda = 0.05
@@ -91,18 +75,14 @@ if __name__ == '__main__':
     params.weight_decay = 0
     params.lr_step_size = 500
     params.lr_gamma = 0.5
-    #params.epoch = 70 # This was used for R4 runs
     params.epoch = 70
     params.num_grad_steps = args.unrolls
     params.R = args.R
     params.pad_ratio = args.pad_ratio # zero-padding ratio
-    #params.sampling_flag = 'var_dens_1D'
-    print('2D VAR DENS')
     params.sampling_flag = 'var_dens_2D'
     params.var_dens_flag = args.var_dens_flag
     params.NX_full_FOV = 640
     params.NY_full_FOV = 372
-    # params.sampling_flag = 'random_uniform'
 
     im_type_str = 'blocks' # for training and validation we use blocks, but for test (inference) we use full images
 
@@ -111,22 +91,16 @@ if __name__ == '__main__':
 
     block_to_im_ratio = NX_block/640
 
-    # calib is assumed to be 12 for NX=640
+    # calib is assumed to be 12 for image size of NX=640. it scales with the image dimension.
     calib_x = int(12 * block_to_im_ratio * params.pad_ratio)
     calib_y = int(12 * block_to_im_ratio * params.pad_ratio * (NY_block/NX_block))
     params.calib = np.array([calib_x, calib_y])
 
     params_val = copy.copy(params)
 
-    small_dataset_flag = 0
-
-
-    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v18"
-
-    if small_dataset_flag == 1:
-        basic_data_folder = basic_data_folder + '_small/'
-    else:
-        basic_data_folder = basic_data_folder + '/'
+    # Notice: The next folder should be the same as the output folder defined in the script
+    # crime_1../Fig5.../data_prep/data_prep_zero_pad_crime.py
+    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/"
 
     # path to train data
     data_type = 'train'
@@ -141,33 +115,15 @@ if __name__ == '__main__':
     # create a directory for the current MoDL run
     run_foldername = 'R{}_pad_{}_unrolls_{}_{}_var_dens'.format(params.R, str(int(100 * params.pad_ratio)),
                                                                 args.unrolls, args.var_dens_flag)
-    if small_dataset_flag == 1:
-        run_foldername= run_foldername + '_small/'
-
-
-
-
-    print('training data folder - CHECK!')
-    print(params.data_path)
-
-    print('num unrolls=',args.unrolls)
-    print('gpu = ',args.gpu)
-    print('pad_ratio=',params.pad_ratio)
-    print('R=', params.R)
-    print('var_dens_flag=',params.var_dens_flag)
-
-
 
     # Create data loader
     train_loader = create_data_loaders(params)
     val_loader = create_data_loaders(params_val)
 
-
     N_train_slices = len(train_loader.dataset) # assuming that batch_size = 1, N_train_slices = N_train_datasests
     N_val_slices = len(val_loader.dataset)  # assuming that batch_size = 1, N_train_slices = N_train_datasests
     print('N_train_slices=', N_train_slices)
     print('N_val_slices=',N_val_slices)
-
 
     # Create an unrolled model
     single_MoDL = UnrolledModel(params).to(device)
@@ -242,25 +198,13 @@ if __name__ == '__main__':
             # #filename = run_foldername + "/zf_image.png"
             # #fig.savefig(filename)
 
-            # # debugging plot - validation
-            # im_out_1_detached = im_out.detach()
-            # im_out_1 = cplx.to_numpy(im_out_1_detached.cpu())[0, :, :]
-
-            # fig = plt.figure()
-            # plt.imshow(np.abs(im_out_1),cmap="gray")
-            # plt.title('CHECK SCALE!!! im out - Training epcoh {} iter {}'.format(epoch,iter))
-            # plt.colorbar()
-            # plt.show()
-
-
             # calc training loss
             loss = criterion(im_out, target)
 
             loss = loss / num_accumulated_iters  # because the loss is accumulated for num_accumulated_iters, we divide the loss by the number of iters to average the accumulated loss gradients.
 
             # backward pass & update network parameters
-            # optimizer.zero_grad()  # this part was moved above for gradient accumulation
-            loss.backward()  # backward pass. note that gradients are accumulated as long as we don't do optimizer.zero_grad()
+            loss.backward()  # backward pass. Note we use gradients accumulation, so optimizer.zero_grad() appears somewhere else
 
             if (iter + 1) % num_accumulated_iters == 0:
                 # Do a SGD step once every num_accumulated_iters
@@ -304,31 +248,31 @@ if __name__ == '__main__':
                 MoDL_err.calc_NRMSE()
                 MoDL_err.calc_SSIM()
 
-                fig = plt.figure(figsize=(15,7))
 
-                plt.subplot(1, 3, 1)
-                plt.imshow(single_MoDL.zf_im_4plot, cmap="gray")
-                plt.colorbar(shrink=0.5)
-                plt.title('zf image')
-
-                plt.subplot(1, 3, 2)
-                plt.imshow(np.rot90(np.abs(im_out), 2), cmap="gray")
-                plt.colorbar(shrink=0.5)
-                plt.title('im_out MoDL - NRMSE {:0.3f}'.format(MoDL_err.NRMSE))
-                # plt.axis('off')
-
-                plt.subplot(1, 3, 3)
-                plt.imshow(np.rot90(np.abs(im_target), 2), cmap="gray")
-                plt.colorbar(shrink=0.5)
-                # plt.axis('off')
-                plt.title('target')
-                plt.suptitle('TRAINING example - iter {} epoch {} - check scale!!!'.format(iter,epoch))
-                plt.show()
-                fig.savefig(run_foldername + '/sanity_check_fig_{}.png'.format(monitoring_cnt))
-
-                monitoring_cnt += 1
-
-                print('training sanity fig saved')
+                # # sanity check - display & save figure
+                # fig = plt.figure(figsize=(15,7))
+                #
+                # plt.subplot(1, 3, 1)
+                # plt.imshow(single_MoDL.zf_im_4plot, cmap="gray")
+                # plt.colorbar(shrink=0.5)
+                # plt.title('zf image')
+                #
+                # plt.subplot(1, 3, 2)
+                # plt.imshow(np.rot90(np.abs(im_out), 2), cmap="gray")
+                # plt.colorbar(shrink=0.5)
+                # plt.title('im_out MoDL - NRMSE {:0.3f}'.format(MoDL_err.NRMSE))
+                #
+                # plt.subplot(1, 3, 3)
+                # plt.imshow(np.rot90(np.abs(im_target), 2), cmap="gray")
+                # plt.colorbar(shrink=0.5)
+                # plt.title('target')
+                # plt.suptitle('TRAINING example - iter {} epoch {} - check scale!!!'.format(iter,epoch))
+                # plt.show()
+                # fig.savefig(run_foldername + '/sanity_check_fig_{}.png'.format(monitoring_cnt))
+                #
+                # monitoring_cnt += 1
+                #
+                # print('training sanity fig saved')
 
                 # -------------- run validation ---------------------
                 # notice: validation requires changing the model's state using torch.no_grad() and model.eval()
@@ -369,73 +313,29 @@ if __name__ == '__main__':
                                 MoDL_val_err.calc_NRMSE()
                                 MoDL_val_err.calc_SSIM()
 
-                                fig = plt.figure(figsize=(15, 7))
-
-                                plt.subplot(1, 3, 1)
-                                plt.imshow(single_MoDL.zf_im_4plot, cmap="gray")
-                                plt.colorbar(shrink=0.5)
-                                plt.title('val zf image')
-
-                                plt.subplot(1, 3, 2)
-                                plt.imshow(np.rot90(np.abs(val_im_out), 2), cmap="gray")
-                                plt.colorbar(shrink=0.5)
-                                plt.title('val_im_out MoDL - NRMSE {:0.3f}'.format(MoDL_val_err.NRMSE))
-                                # plt.axis('off')
-
-                                plt.subplot(1, 3, 3)
-                                plt.imshow(np.rot90(np.abs(val_im_target), 2), cmap="gray")
-                                plt.colorbar(shrink=0.5)
-                                # plt.axis('off')
-                                plt.title('val_target')
-                                plt.suptitle('VALIDATION example - training iter {} epoch {}'.format(iter, epoch))
-                                plt.show()
-                                fig.savefig(run_foldername + '/val_check_fig_{}.png'.format(monitoring_cnt))
-                                print('validation sanity fig saved')
-
-
-                # # ---- old plot ----
-                # input_numpy = cplx.to_numpy(input.cpu())[0, :, :]
-                #
-                # # fig = plt.figure()
-                # # plt.imshow(np.log(np.abs(input_numpy)),cmap="gray")
-                # # plt.title('input k-space')
-                # # plt.show()
-                # # fig.savefig('check input kspace')
-                #
-                # # fig = plt.figure()
-                # # plt.imshow(np.abs(mask[0,:,:,0])),cmap="gray")
-                # # plt.show()
-                # # fig.savefig(run_foldername + '/mask_{}.png'.format(monitoring_cnt))
-                #
-                # # extract a single image from the batch & convert it from a two-channel tensor (Re&Im) to a complex numpy array
-                # im_target_1 = cplx.to_numpy(target.cpu())[0, :, :]
-                # im_out_1_detached = im_out.detach()
-                # im_out_1 = cplx.to_numpy(im_out_1_detached.cpu())[0, :, :]
-                #
-                # a = np.concatenate((im_target_1, im_out_1), axis=1)
-                # s1 = im_target_1.shape[1]
-                #
-                # fig = plt.figure()
-                # plt.subplot(1, 2, 1)
-                # plt.imshow(np.rot90(np.abs(im_target_1),2), cmap="gray")
-                # #plt.axis('off')
-                # plt.colorbar(shrink=0.5)
-                # plt.title('target')
-                #
-                # plt.subplot(1, 2, 2)
-                # plt.imshow(np.rot90(np.abs(im_out_1),2), cmap="gray")
-                # plt.colorbar(shrink=0.5)
-                # #plt.axis('off')
-                # plt.title('im out - training epoch {} iter {}'.format(epoch,iter) )
-                # plt.suptitle('loss {:.4g}'.format(loss.item()))
-                # plt.show()
-                # fig.savefig(run_foldername + '/sanity_check_fig_{}.png'.format(monitoring_cnt))
-                #
-                # monitoring_cnt += 1
-                #
-                # print('monitoring fig saved')
-
-
+                                # # validation sanity check - display & save figure
+                                # fig = plt.figure(figsize=(15, 7))
+                                #
+                                # plt.subplot(1, 3, 1)
+                                # plt.imshow(single_MoDL.zf_im_4plot, cmap="gray")
+                                # plt.colorbar(shrink=0.5)
+                                # plt.title('val zf image')
+                                #
+                                # plt.subplot(1, 3, 2)
+                                # plt.imshow(np.rot90(np.abs(val_im_out), 2), cmap="gray")
+                                # plt.colorbar(shrink=0.5)
+                                # plt.title('val_im_out MoDL - NRMSE {:0.3f}'.format(MoDL_val_err.NRMSE))
+                                # # plt.axis('off')
+                                #
+                                # plt.subplot(1, 3, 3)
+                                # plt.imshow(np.rot90(np.abs(val_im_target), 2), cmap="gray")
+                                # plt.colorbar(shrink=0.5)
+                                # # plt.axis('off')
+                                # plt.title('val_target')
+                                # plt.suptitle('VALIDATION example - training iter {} epoch {}'.format(iter, epoch))
+                                # plt.show()
+                                # fig.savefig(run_foldername + '/val_check_fig_{}.png'.format(monitoring_cnt))
+                                # print('validation sanity fig saved')
 
 
         # Saving the model
@@ -459,14 +359,6 @@ if __name__ == '__main__':
             print("Saved successfully!")
 
         saveList(loss_train_data,run_foldername + '/loss_train_data.npy')
-
-        # # how to load the list loss_train_data into a numpy array:
-        # def loadList(filename):
-        #     # the filename should mention the extension 'npy'
-        #     tempNumpyArray=np.load(filename)
-        #     return tempNumpyArray.tolist()
-
-
 
 
 

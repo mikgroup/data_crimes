@@ -35,8 +35,7 @@ import matplotlib.pyplot as plt
 FastMRI_train_folder = "/mikQNAP/NYU_knee_data/multicoil_train/"
 FastMRI_val_folder = "/mikQNAP/NYU_knee_data/multicoil_val/"
 
-# Set this to your own path - where to save the output files:
-#basic_out_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v18/"
+# NOTICE: set the following path to your own path - where to save the output files:
 basic_out_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/"
 
 

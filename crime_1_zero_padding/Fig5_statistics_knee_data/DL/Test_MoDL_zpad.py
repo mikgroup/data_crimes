@@ -13,18 +13,18 @@
 
 
 import logging
-import os
+import os,sys
+# add the project's folder - for access to the functions library:
+sys.path.append("/mikQNAP/efrat/1_inverse_crimes/2_public_repo_mirror_PyCharm/")
+
+#sys.path.append("../")  # add folder above
+
 import matplotlib.pyplot as plt
 import numpy as np
-import sigpy as sp
 import torch
 import torch.nn as nn
 from MoDL_single import UnrolledModel
-#from subsample_fastmri import MaskFunc
-#from subsample_var_dens import MaskFuncVarDens_1D
-#from torch.utils.data import DataLoader
 from utils.datasets import create_data_loaders
-from PIL import Image
 
 # import custom libraries
 from utils import complex_utils as cplx
@@ -166,22 +166,9 @@ for v_i in range (var_dens_type_vec.shape[0]):
 
         # use_multiple_GPUs_flag = 0
 
-        # load test data
-        # if small_dataset_flag == 1:
-        #     print('*** using a SMALL dataset ***')
-        #     params.data_path = "/mikQNAP/NYU_knee_data/singlecoil_efrat/1_zpad_data_v15_x" + str(int(100*pad_ratio)) + "_small_dataset/test/"
-        #
-        # elif small_dataset_flag == 0:
-        #
-        #      params.data_path = "/mikQNAP/NYU_knee_data/singlecoil_efrat/1_zpad_data_v15_x" + str(int(100*pad_ratio)) + "/test/"
-
-        basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v18"
-
-        if small_dataset_flag == 1:
-            print('*** using a SMALL dataset ***')
-            basic_data_folder = basic_data_folder + '_small/'
-        else:
-            basic_data_folder = basic_data_folder + '/'
+        # NOTICE: set the following path to your own path. It should be the same path as the one defined in the
+        # script crime_1_../Fig5.../data_prep/data_prep_zero_pad_crime.py
+        basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/"
 
         # path to test data
         data_type = 'test'
@@ -212,37 +199,17 @@ for v_i in range (var_dens_type_vec.shape[0]):
 
 
             # load trained network
-            if small_dataset_flag==1:
-                #checkpoint_file = 'R{}_pad_ratio_{}_unrolls_{}_small_dataset/checkpoints/model_{}.pt'.format(params.R, pad_ratio, unrolls,checkpoint_num)
-                checkpoint_file = 'R{}_pad_{}_unrolls_{}_{}_var_dens_small_data/checkpoints/model_{}.pt'.format(
-                    params.R, str(int(100*pad_ratio)),
-                    unrolls,
-                    var_dens_flag,
-                    checkpoint_num,
-                    )
-            elif small_dataset_flag==0:
-                #checkpoint_file = 'R{}_pad_ratio_{}_unrolls_{}/checkpoints/model_{}.pt'.format(params.R,pad_ratio, unrolls,checkpoint_num)
-                checkpoint_file = 'R{}_pad_{}_unrolls_{}_{}_var_dens/checkpoints/model_{}.pt'.format(
-                                                                                       params.R,
-                                                                                       str(int(100*pad_ratio)),
-                                                                                       unrolls,
-                                                                                       var_dens_flag,
-                                                                                       checkpoint_num,
-                                                                                       )
-                # checkpoint_file = 'R{}_pad_{}_unrolls_{}_small_data_{}_var_dens/checkpoints/model_{}.pt'.format(
-                #     params.R, pad_ratio, unrolls, var_dens_flag, checkpoint_num)
-
-            print('checkpoint_file=')
-            print(checkpoint_file)
-
+            checkpoint_file = 'R{}_pad_{}_unrolls_{}_{}_var_dens/checkpoints/model_{}.pt'.format(
+                                                                                   params.R,
+                                                                                   str(int(100*pad_ratio)),
+                                                                                   unrolls,
+                                                                                   var_dens_flag,
+                                                                                   checkpoint_num,
+                                                                                   )
             checkpoint = torch.load(checkpoint_file,map_location=device)
 
             params_loaded = checkpoint["params"]
             single_MoDL = UnrolledModel(params_loaded).to(device)
-
-
-            # single_MoDL.display_zf_image_flag = 1
-            # single_MoDL.zf_im_foldername = "test_figs"
 
             print('params.data_path: ', params.data_path)
             print('params.batch_size: ', params.batch_size)
@@ -253,7 +220,6 @@ for v_i in range (var_dens_type_vec.shape[0]):
                 single_MoDL = nn.DataParallel(single_MoDL, device_ids=[0,1,2, 3])  # the first index on the device_ids determines which GPU will be used as a staging area before scattering to the other GPUs
             else:
                 print("Now using a single GPU")
-
 
             single_MoDL.load_state_dict(checkpoint['model'])
 
@@ -267,17 +233,7 @@ for v_i in range (var_dens_type_vec.shape[0]):
                     if i_batch % 10 == 0:
                         print('loading test batch ',i_batch)
 
-
-                    #input_batch, target_batch, mask_batch, target_no_JPEG_batch = data
                     input_batch, target_batch, mask_batch = data
-
-                    # # debugging - check target
-                    # im_target = cplx.to_numpy(target_batch.cpu())[0, :, :]
-                    # fig = plt.figure()
-                    # plt.imshow(np.abs(im_target),cmap="gray")
-                    # plt.title('target')
-                    # plt.colorbar()
-                    # plt.show()
 
 
                     in_size =  input_batch.size()
@@ -287,10 +243,6 @@ for v_i in range (var_dens_type_vec.shape[0]):
                     if (pad_i==0) & (v_i==0):
                         n_test_images += 1
                         print('n_test_images=',n_test_images)
-
-                    #print('input_batch ',input_batch.shape)
-                    #print('target_batch ', target_batch.shape)
-
 
                     # # display the mask (before converting it to torch tensor)
                     if (i_batch == 0) & (checkpoint_num == checkpoint_vec[-1]):
@@ -321,16 +273,6 @@ for v_i in range (var_dens_type_vec.shape[0]):
                         im_input = cplx.to_numpy(input_batch.cpu())[i, :, :]
                         im_target = cplx.to_numpy(target_batch.cpu())[i, :, :]
                         im_out = cplx.to_numpy(out_batch.cpu())[i, :, :]
-                        #print('im_input.shape',im_input.shape)
-                        #print('im_target.shape', im_target.shape)
-
-                        # # normalize the target image (no need to normalize the output of the network)
-                        # scale = calc_scaling_factor(kspace)
-                        #
-                        # kspace = kspace / scale
-                        # im_target = im_target / scale
-                        # #target_no_JPEG = target_no_JPEG / scale
-
 
                         MoDL_err = error_metrics(np.abs(im_target),np.abs(im_out))
                         MoDL_err.calc_NRMSE()
@@ -342,10 +284,6 @@ for v_i in range (var_dens_type_vec.shape[0]):
 
 
                         if (i_batch>=5) &  (i_batch<=15) & (i<=3):
-                            # print('input_batch.shape: ', input_batch.shape)
-                            # print('out_batch.shape: ', out_batch.shape)
-                            # print('target_batch.shape: ', target_batch.shape)
-                            # print('mask_batch.shape: ', mask_batch.shape)
 
                             im_out_rotated = np.rot90(np.abs(im_out),2)
                             im_gold_rotated = np.rot90(np.abs(im_target),2)
@@ -392,10 +330,6 @@ for v_i in range (var_dens_type_vec.shape[0]):
                             plt.suptitle('Results R{} pad_x{} MoDL{} - example {}'.format(R, pad_ratio_str, checkpoint_num,i))
                             plt.show()
                             fig.savefig('test_figs_R{}/test_images_pad_x{}_MoDL{}_example{}_zoom'.format(R,pad_ratio_str,checkpoint_num,i))
-
-
-
-                            #print('debug')
 
 
                 NRMSE_array = np.asarray(NRMSE_test_list)
