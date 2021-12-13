@@ -1,6 +1,7 @@
 """
 MoDL for single channel MRI 
-by Ke Wang (kewang@berkeley.edu), 2020.
+
+(c) Ke Wang (kewang@berkeley.edu), 2020.
 
 """
 
