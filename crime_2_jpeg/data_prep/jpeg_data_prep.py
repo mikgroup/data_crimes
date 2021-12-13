@@ -1,13 +1,19 @@
 '''
-This code demonstrates prepares processed version of the raw data (knee Proton Density data from FastMRI) for the
-CS, DictL and DL experiments of subtle data crime 2.
+This code takes raw data (knee Proton Density data from FastMRI) and creates processed (JPEG-compressed)
+datasets for the CS, DictL and DL experiments shown in figures 6 and 7 of the subtle data crimes paper.
 
-Once you define the desired data path in the basic_out_folder here, make sure to update it in the scripts of the above experiments.
+NOTICE: you should update the following variables to YOUR desired path (see first code cell):
+FastMRI_train_folder    # input folder
+FastMRI_val_folder      # input folder
+FatSat_processed_data_folder  # desired output folder
+
+In this script and all the associated scripts:
+q is the JPEG quality factor.
+q=999 is used for saving data WITHOUT JPEG compression.
 
 (c) Efrat Shimron (UC Berkeley, 2021)
 '''
 
-# TODO: remove the option for a small dataset
 
 import sys
 import numpy as np
@@ -17,38 +23,26 @@ import sigpy as sp
 from functions.utils import merge_multicoil_data, JPEG_compression, extract_block
 import matplotlib.pyplot as plt
 
+######################################################################################################################
+#                                      Set the following to YOUR paths
+######################################################################################################################
 
+FastMRI_train_folder = "/mikQNAP/NYU_knee_data/multicoil_train/"
+FastMRI_val_folder = "/mikQNAP/NYU_knee_data/multicoil_val/"
 
 # Set this to your path - where to save the output files:
-basic_out_folder = "/mikQNAP/NYU_knee_data/multicoil_efrat/5_JPEG_compressed_data"
+basic_data_folder = "/mikQNAP/NYU_knee_data/multicoil_efrat/5_JPEG_compressed_data/"
 
 
 ######################################################################################################################
 #                                                   Prep data
 ######################################################################################################################
 
-
-#q_vec = np.array([999])
-# q_vec = np.array([100])
 q_vec = np.array([20,50,75,100,999])
 
-print('q_vec: ',q_vec)
-
-create_small_dataset_flag = 0  # 0 = large database, 1 = small database, 2 = large database consisting of images of size 372 only
-
-if create_small_dataset_flag == 1:
-    print('creating a SMALL dataset')
-    N_train_datasets = 2  # num scans
-    N_val_datasets = 3
-    N_test_datasets = 3
-
-elif create_small_dataset_flag == 0:
-
-    print('creating a LARGE dataset')
-    ############# large dataset #############
-    N_train_datasets = 80
-    N_val_datasets = 10
-    N_test_datasets = 7
+N_train_datasets = 80
+N_val_datasets = 10
+N_test_datasets = 7
 
 #################################### data split ###############################################
 # NOTICE: the original FastMRI database is divided to train/val/test data.
@@ -56,13 +50,9 @@ elif create_small_dataset_flag == 0:
 # Since we need fully-sampled data for training the models, we will split the FastMRI train data into train & test data.
 # Val data will remain val data.
 
-FastMRI_train_folder = "/mikQNAP/NYU_knee_data/multicoil_train/"
-FastMRI_val_folder = "/mikQNAP/NYU_knee_data/multicoil_val/"
-# home_dir_test = "/mikQNAP/NYU_knee_data/multicoil_test/"
-
-FastMRI_train_folder_files = os.listdir("/mikQNAP/NYU_knee_data/multicoil_train/")
-FastMRI_val_folder_files = os.listdir("/mikQNAP/NYU_knee_data/multicoil_val/")
-# home_dir_test_files = os.listdir("/mikQNAP/NYU_knee_data/multicoil_test/")
+# create file lists
+FastMRI_train_folder_files = os.listdir(FastMRI_train_folder)
+FastMRI_val_folder_files = os.listdir(FastMRI_val_folder)
 
 # Split the LISTS of FastMRI training files into two lists: train & test files.
 train_files_list = FastMRI_train_folder_files[
@@ -82,14 +72,6 @@ if 'file1002455.h5' in train_files_list:
     print(f'pathology 2 is in train_files_list')
     train_files_list.remove('file1002455.h5')
     print('removed')
-
-# N_available_test_scans = len(test_files_list)
-# N_available_train_scans = len(train_files_list)
-# N_available_val_scans = len(val_files_list)
-
-# print('N_available_train_scans=',N_available_train_scans)
-# print('N_available_val_scans=',N_available_val_scans)
-# print('N_available_test_scans=',N_available_test_scans)
 
 
 for q_i in range(q_vec.shape[0]):
@@ -328,12 +310,7 @@ for q_i in range(q_vec.shape[0]):
 
                     ################## saving -  all slices extracted from a single h5 file are saved together  =================
 
-                    if create_small_dataset_flag == 1:
-                        basic_out_folder = basic_out_folder + '_small/'
-                    else:
-                        basic_out_folder = basic_out_folder + '/'
-
-                    out_folder = basic_out_folder + data_type + "/q" + str(q) + "/" + im_type_str + "/"
+                    out_folder = basic_data_folder + data_type + "/q" + str(q) + "/" + im_type_str + "/"
 
                     if not os.path.exists(out_folder):
                         os.makedirs(out_folder)
@@ -369,6 +346,6 @@ for q_i in range(q_vec.shape[0]):
     print('N_imgs_val: ', N_imgs_val)
     print('N_imgs_test: ', N_imgs_test)
 
-meta_filename = basic_out_folder + '/metadata'
+meta_filename = basic_data_folder + '/metadata'
 np.savez(meta_filename, N_PD_scans_train=N_PD_scans_train, N_PD_scans_val=N_PD_scans_val,
          N_PD_scans_test=N_PD_scans_test, N_imgs_train=N_imgs_train, N_imgs_val=N_imgs_val, N_imgs_test=N_imgs_test)

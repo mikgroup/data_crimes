@@ -37,13 +37,10 @@ project_full_path = "/mikQNAP/efrat/1_inverse_crimes/1_mirror_PyCharm_CS_MoDL_me
 sys.path.append(project_full_path)
 sys.path.insert(1, './mri-sim-py/epg')
 import warnings
-
 warnings.simplefilter(action='ignore', category=FutureWarning)
 from functions.dict_learn_funcs import DictionaryLearningMRI
 from functions.sampling_funcs import gen_2D_var_dens_mask
 from functions.error_funcs import error_metrics
-
-home_dir = os.listdir("/mikQNAP/NYU_knee_data/singlecoil_train/")
 
 num_CPUs = 75
 mkl.set_num_threads(num_CPUs)  # the number in the brackets determines the number of CPUs. 1 is recommended for the DictL algorithm! Otherwise there's a lot of overhead (when the run is spread accross multiple cpus) and the comptuation time becomes longer.
@@ -116,7 +113,6 @@ if __name__ == '__main__':
     if simulation_flag == 0: # statistics
         N_examples = 122  # desired number of slices (for statistics)
         print('Running statistics on {} slices'.format(N_examples))
-        #sim_str = 'statistics'
         data_type = 'test'
         # image dimensions
         NX = 640
@@ -227,15 +223,8 @@ if __name__ == '__main__':
                         kspace_slice = kspace_all_slices[s_i, :, :].squeeze()
                         rec_gold = img_jpeg_all_slices[s_i, :, :].squeeze()
 
-
                         # -------- subsample kspace ------------
-
-                        # mask = MaskFuncVarDens_2D(calib, R)
                         mask, pdf, poly_degree = gen_2D_var_dens_mask(R, imSize, var_dens_flag, calib=calib)
-
-                        # fig = plt.figure()
-                        # plt.imshow(np.abs(mask),cmap="gray")
-                        # plt.show()
 
                         ksp_sampled = mask * kspace_slice  # in this example we use only the first coil
 
@@ -325,14 +314,6 @@ if __name__ == '__main__':
                             img_dict /= app.block_scale_factor
                             rec_DictL = app.img_out
 
-                            # if ns <= 20:
-                            #     fig = plt.figure()
-                            #     plt.imshow(np.rot90(np.abs(rec_DictL),2), cmap="gray")
-                            #     plt.title('DictL rec_DictL before fftshift')
-                            #     plt.show()
-                            #     fname = run_foldername + f'/DictL_rec_slice_{ns}'
-                            #     fig.savefig(fname)
-
                             # calc NRMSE & SSIM
                             DictL_err = error_metrics(np.abs(rec_gold), np.abs(rec_DictL))
                             DictL_err.calc_NRMSE()
@@ -373,15 +354,6 @@ if __name__ == '__main__':
                                 fname = run_foldername + f'/rec_slice_{ns}'
                                 fig.savefig(fname,dpi=1000)
 
-
-                        # # store imgs in arrays
-                        # if ns<N_recs_to_store:
-                        #     gold_recs_array[qi,  ns - 1, :, :] = rec_gold
-                        #     CS_recs_array[qi,  ns - 1, :, :] = rec_CS
-                        #     if DictL_flag == 1:
-                        #         DictL_recs_array[qi, ns - 1, :, :] = rec_DictL
-
-
                     if ns == N_examples:
                         break
 
@@ -397,9 +369,6 @@ if __name__ == '__main__':
                              CS_SSIM_vs_quality=CS_SSIM_vs_quality[:,0:ns-1,:,:].squeeze(),
                              DictL_NRMSE_vs_quality=DictL_NRMSE_vs_quality[:,0:ns-1].squeeze(),
                              DictL_SSIM_vs_quality=DictL_SSIM_vs_quality[:,0:ns-1].squeeze(),
-                             # gold_recs_array=gold_recs_array,
-                             # CS_recs_array=CS_recs_array,
-                             # DictL_recs_array=DictL_recs_array,
                              q_vec=q_vec,
                              R=R,
                              N_examples=N_examples,
@@ -426,54 +395,6 @@ np.savez(res_filename,
          DictL_flag=DictL_flag)
 
 print('data saved successfully')
-
-# ---------- for pathologies - display CS recs ------------------
-
-#if (simulation_flag == 1) | (simulation_flag == 2):
-#
-# # coordinates for zoom-in on the pathology area
-# s1 = int(a * NX)
-# s2 = int(b * NY)
-# s3 = int(c * NX)
-# s4 = int(d * NY)
-#
-# # TODO: add NRMSE
-# for r in range(R_vec.shape[0]):
-#     R = R_vec[r]
-#     if (R == 2) | (R == 4):
-#
-#         fig = plt.figure(figsize=(12, 4.5))
-#         cnt = 1
-#         for qi in range(q_vec.shape[0]):
-#             q = q_vec[-(qi + 1)]
-#             rec_gold = gold_recs_array[-(qi + 1), r, 0, :, :].squeeze()
-#             rec_gold_zoomed = rec_gold[s1:s3, s2:s4]
-#
-#             plt.subplot(2, q_vec.shape[0], cnt)
-#             plt.imshow(np.abs(rec_gold_zoomed), cmap="gray")
-#             plt.axis('off')
-#             plt.title('gold q={}'.format(q))
-#             cnt += 1
-#
-#         for qi in range(q_vec.shape[0]):
-#             q = q_vec[-(qi + 1)]
-#             rec_CS = CS_recs_array[-(qi + 1), r, 0, :, :].squeeze()
-#             rec_CS_zoomed = rec_CS[s1:s3, s2:s4]
-#
-#             plt.subplot(2, q_vec.shape[0], cnt)
-#             plt.imshow(np.abs(rec_CS_zoomed), cmap="gray")
-#             imSize_zoomed = np.array([(s1 - s3), (s4 - s2)])
-#             CS_str = 'NRMSE={:.3f}'.format(CS_NRMSE_vs_quality[-(qi + 1), r, 0])
-#             plt.text(0.02 * imSize_zoomed[1], -0.95 * imSize_zoomed[0], CS_str, color="yellow")
-#
-#             plt.axis('off')
-#             plt.title('CS q={}'.format(q))
-#             cnt += 1
-#
-#         plt.suptitle('R={} - {} VD - pathology case {}'.format(R, var_dens_flag, simulation_flag))
-#         plt.show()
-#         fname = 'pathology_{}_R{}_VD_{}'.format(simulation_flag, R, var_dens_flag)
-#         fig.savefig(fname)
 
 # ----------- preparation for plots -----------------
 x_ticks_labels = []
@@ -541,8 +462,6 @@ if DictL_flag == 1:
     y_ticks_vec = np.array([0, 0.02, 0.04])
     ax.set_yticks(y_ticks_vec)
     ax.set_yticklabels(['0', '0.02', '0.04'], fontsize=14)
-    # xticks = ax.get_xticklabels()
-    # ax.set_xticklabels(xticks,fontsize=14)
     ax.tick_params(axis='both', which='major', labelsize=14)
     ax = plt.gca()
     ax.legend(fontsize=14, loc="upper right")
@@ -551,37 +470,3 @@ if DictL_flag == 1:
     fname = run_foldername +'RES_DictL_NRMSE_vs_q.png'
     fig.savefig(fname=fname)
 
-
-print('the run finished successfully')
-
-# # ------- Display the recs -----------
-#
-# for ns in range(N_examples):
-#
-#     for r in range(R_vec.shape[0]):
-#             R = R_vec[r]
-#             #for i, q in enumerate(q_list):
-#             for qi in range(q_vec.shape[0]):
-#
-#
-#
-#                 q = q_vec[qi]
-#                 rec_gold = gold_recs_array[qi,r,ns].squeeze()
-#                 rec = DictL_recs_array[qi,r,ns].squeeze()
-#
-#                 nrmse = DictL_NRMSE_vs_quality[qi,r,ns]
-#
-#                 if qi == 0:
-#                     fig1, ax1 = plt.subplots(2, (1 + q_vec.shape[0]), figsize=(15, 15))
-#                 ax1[0][qi].imshow(np.abs(rec_gold.squeeze()), cmap="gray")
-#                 ax1[0][qi].set_title('Gold of JPEG q={}'.format(q))
-#                 ax1[1][qi].imshow(np.abs(rec_gold.squeeze()), cmap="gray")
-#                 ax1[1][qi].set_title('CS rec NRMSE={:0.3f} \ns'.format(nrmse))
-#
-#             plt.suptitle('R={}'.format(R))
-#             plt.show()
-#             fname = 'RECS_all_q_R{}_slice{}_realz{}.png'.format(R,ns,s)
-#             fig.savefig(fname=fname)
-#
-
-#print('stop for debug')

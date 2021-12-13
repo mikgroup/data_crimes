@@ -1,3 +1,22 @@
+'''
+This code presents the example shown in Fig 6 in the paper.
+
+Notice: the code loads the MoDL networks that were trained for the experiments shown in Fig 7. So before running this
+code, you should first run the DL experiments for Fig 7.
+
+NOTICE: you should update the following variables to YOUR desired path (see first code cell):
+FastMRI_train_folder    # input folder
+FastMRI_val_folder      # input folder
+FatSat_processed_data_folder  # desired output folder
+
+In this script and all the associated scripts:
+q is the JPEG quality factor.
+q=999 is used for saving data WITHOUT JPEG compression.
+
+(c) Efrat Shimron (UC Berkeley, 2021)
+'''
+
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -15,18 +34,15 @@ SSIM_std_vs_q_and_R = container['SSIM_std_vs_q_and_R']
 NRMSE_examples_4display = container['NRMSE_examples_4display']
 SSIM_examples_4display = container['SSIM_examples_4display']
 
-# container_2 = np.load('RECS_and_TARGETS.npz')
-# TARGETS = container_2['TARGETS']
-# RECS = container_2['RECS']
 
-# structure of arrays - copied from Test_MoDL_on_jpeg_data.py
-#TARGETS = np.zeros((NX, NY, q_vec.shape[0], N_examples_4display))
-#RECS = np.zeros((NX, NY, R_vec.shape[0], q_vec.shape[0], N_examples_4display))
-#NRMSE_examples_4display = np.zeros((R_vec.shape[0],q_vec.shape[0],N_calc_err))
-#SSIM_examples_4display = np.zeros((R_vec.shape[0],q_vec.shape[0],N_calc_err))
+# Dimensions of loaded arrays
+# TARGETS = [NX, NY, q_vec.shape[0], N_examples_4display]
+# RECS = [NX, NY, R_vec.shape[0], q_vec.shape[0], N_examples_4display]
+# NRMSE_examples_4display = [R_vec.shape[0],q_vec.shape[0],N_calc_err]
+# SSIM_examples_4display = [R_vec.shape[0],q_vec.shape[0],N_calc_err]
 
-print('preparing figs...')
-N_examples_4display = 1 #50 #TARGETS.shape[3]
+
+N_examples_4display = 1
 
 NX = TARGETS.shape[0]
 NY = TARGETS.shape[1]
@@ -43,7 +59,7 @@ for n in range(N_examples_4display):
 
         n_example = 14
 
-        # # display full-FOV image (q=100)
+        # display full-FOV image
         im_target0 = TARGETS[:, :, -1, n_example]
         fig = plt.figure()
         plt.imshow(np.abs(im_target0),cmap="gray")
@@ -54,10 +70,8 @@ for n in range(N_examples_4display):
         figname = 'gold_example_{}'.format(n_example)
         fig.savefig(figname)
 
-        #fig = plt.figure(figsize=(17,5)) # for q_vec=[10,20,50,75,100]
+
         fig = plt.figure(figsize=(13, 5))
-        #for q_i in range(Nq):
-        #    q = q_vec[q_i]
         for q_i in range(q_vec_4display.shape[0]):
             q = q_vec_4display[q_i]
             print('q=',q)
@@ -72,25 +86,18 @@ for n in range(N_examples_4display):
 
             plt.subplot(2,Nq,(Nq-q_i))
             plt.imshow(im_tar_zoomed,cmap="gray")
-            #plt.imshow(im_target, cmap="gray")
             plt.axis('off')
             plt.clim(0, 2.2)
             plt.title('target q={}'.format(q))
 
             plt.subplot(2,Nq,2*Nq-q_i)
             plt.imshow(im_rec_zoomed,cmap="gray")
-            #plt.title('target q={}'.format(q))
-            #plt.imshow(im_rec, cmap="gray")
             plt.axis('off')
             plt.clim(0, 2.2)
             CS_str = 'NRMSE {:.4f}'.format(NRMSE_examples_4display[r,q_i_in_loaded_array,n])
             plt.text(0.02 * NX_zoomed, 0.95 * NY_zoomed, CS_str, color="yellow",fontsize=15)
-            #plt.title('NRMSE {:.4f}'.format(NRMSE_examples_4display[r,q_i_in_loaded_array,n]))
-
 
         plt.suptitle('Example #{} - R={}'.format(n_example,R))
         plt.show()
         figname = 'rec_fig_R{}_example_{}'.format(R,n_example)
         fig.savefig(figname)
-
-print('')
