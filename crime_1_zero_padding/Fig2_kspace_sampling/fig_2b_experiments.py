@@ -1,14 +1,18 @@
-# This script runs the experiments for figure 2b in the Subtle Data Crimes paper. It then saves the results in a
-# file named R_eff_results_R6.npz.
-# To generate the graphs, run the next script: fig_2b_plot_R_eff_vs_zero_pad.py
+'''
+This script runs the experiments for figure 2b in the Subtle Data Crimes paper. It then saves the results in a
+file named R_eff_results_R6.npz.
+To generate the graphs, run the next script: fig_2b_plot_R_eff_vs_zero_pad.py
 
-# (c) Efrat Shimron, UC Berkeley, 2021.
+(c) Efrat Shimron, UC Berkeley, 2021.
+'''
 
 
 import numpy as np
 import sys
 
-sys.path.append("../")  # add folder above, for access to the functions library
+#sys.path.append("../")  # add folder above, for access to the functions library
+# add the project's folder - for access to the functions library:
+sys.path.append("/mikQNAP/efrat/1_inverse_crimes/2_public_repo_mirror_PyCharm/")
 
 from functions.sampling_funcs import genPDF, genSampling
 from functions.utils import calc_R_actual, calc_pad_half

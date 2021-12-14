@@ -1,9 +1,11 @@
-# This script creates the graph displayed in Figure 2b of the Subtle Data Crimes paper.
-#
-# Before running this script, please run the script fig_2b_experiments.py which computes the effective sampling rates
-# and saves the results in a file named R_eff_results_R6.npz. The current script loads that files and creates the figure.
-#
-# (c) Efrat Shimron, UC Berkeley, 2021.
+'''
+This script creates the graph displayed in Figure 2b of the Subtle Data Crimes paper.
+
+Before running this script, please run the script fig_2b_experiments.py which computes the effective sampling rates
+and saves the results in a file named R_eff_results_R6.npz. The current script loads that files and creates the figure.
+
+(c) Efrat Shimron, UC Berkeley, 2021.
+'''
 
 import numpy as np
 import sys
