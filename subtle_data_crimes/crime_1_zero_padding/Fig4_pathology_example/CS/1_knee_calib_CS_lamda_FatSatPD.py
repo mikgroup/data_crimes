@@ -10,10 +10,12 @@ Make sure that the data path defined here - in FatSat_processed_data_folder - is
 '''
 
 ##########################################################################################
+import sys
+# add path to functions library - when running on mikQNAP
+sys.path.append("/mikQNAP/efrat/1_inverse_crimes/1_mirror_PyCharm_CS_MoDL_merged/SubtleCrimesRepo/")
 import os
 import numpy as np
 import h5py
-
 import matplotlib.pyplot as plt
 import sigpy as sp
 from sigpy import mri as mr
@@ -21,7 +23,7 @@ from subtle_data_crimes.functions import error_metrics
 from subtle_data_crimes.functions import gen_2D_var_dens_mask
 
 # update the next field and make sure that it's the same one as defined in Fig4_pathology_example/data_prep.py
-FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v19_FatSatPD/"
+FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/zpad_FatSat_data/"
 
 #################################################################################
 ## Experiment set-up

@@ -147,7 +147,7 @@ if __name__ == '__main__':
     ns = 0 # counts loaded slices
 
 
-    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v19_FatSatPD/"
+    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/zpad_FatSat_data/"
 
     data_path = basic_data_folder + data_type + "/pad_" + str(
         int(100 * pad_ratio)) + "/" + im_type_str + "/"

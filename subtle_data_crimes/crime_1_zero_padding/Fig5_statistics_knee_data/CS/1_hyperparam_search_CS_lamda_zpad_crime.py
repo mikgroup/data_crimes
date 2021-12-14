@@ -28,7 +28,7 @@ from subtle_data_crimes.functions import gen_2D_var_dens_mask
 #################################################################################
 
 # NOTICE: the next path should be identical to the output path in the script crime_1_../Fig5../data_prep/data_prep_zero_pad_crime.py
-basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v18/"
+basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/zpad_data/"
 
 data_type = 'val' # validation data is used for calibrating the params
 im_type_str = 'full_im'  # Options: 'full_im' / 'blocks' (blocks are used for training Deep Learning models, not for CS & DictL).

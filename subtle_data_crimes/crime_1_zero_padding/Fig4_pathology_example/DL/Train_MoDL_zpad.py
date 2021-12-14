@@ -1,4 +1,11 @@
-# This is based on Ke's notebook Train_MoDL.ipynb
+'''
+This code is used for training MoDL on zero-padded data, for the results shown in figures 5 and 8a-b in the paper.
+
+Before running this script you should update the following:
+basic_data_folder - it should be the same as the output folder defined in the script /crime_2_jpeg/data_prep/jpeg_data_prep.py
+
+(c) Efrat Shimron, UC Berkeley, 2021
+'''
 
 ##############################################################################################
 # Example - how to run this script from linux command line:
@@ -100,7 +107,7 @@ if __name__ == '__main__':
     params_val = copy.copy(params)
 
 
-    FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v19_FatSatPD/" # FatSatPD
+    FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/zpad_FatSat_data/" # FatSatPD
     print('FatSatPD data is used!')
 
     FatSat_processed_data_folder = FatSat_processed_data_folder + '/'

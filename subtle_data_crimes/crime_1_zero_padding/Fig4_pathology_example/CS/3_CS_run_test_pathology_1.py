@@ -74,7 +74,7 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
         pad_ratio_str = int(pad_ratio)
 
     # # update the next field and make sure that it's the same one as defined in Fig4_pathology_example/data_prep.py
-    FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v19_FatSatPD/"
+    FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/zpad_FatSat_data/"
 
     data_path = FatSat_processed_data_folder + data_type + "/pad_" + str(
         int(100 * pad_ratio)) + "/" + im_type_str + "/"
