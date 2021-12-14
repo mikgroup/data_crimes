@@ -34,7 +34,7 @@ FastMRI_train_folder = "/mikQNAP/NYU_knee_data/multicoil_train/"
 FastMRI_val_folder = "/mikQNAP/NYU_knee_data/multicoil_val/"
 
 # NOTICE: set the following path to your own path - where to save the output files:
-basic_out_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/jpeg_data/"
+basic_out_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/zpad_data/"
 
 
 
@@ -343,11 +343,11 @@ for data_i in range(3):  # 0 = train, 1 = val, 2 = test, 3 = pathology I, 4 = pa
                         if not os.path.exists(out_folder):
                             os.makedirs(out_folder)
 
-                        # # Save data in h5 file
-                        # h5f = h5py.File(out_folder + '%d.h5' % (n_PD_scans), 'w')
-                        # h5f.create_dataset('kspace', data=kspace_coils_merged_padded_multi_slice)
-                        # h5f.create_dataset('reconstruction', data=images_coils_merged_padded_multi_slice)  #TODO: change this to "ref_img" and change the code that loads this in the training & test scripts
-                        # h5f.close()
+                        # Save data in h5 file
+                        h5f = h5py.File(out_folder + '%d.h5' % (n_PD_scans), 'w')
+                        h5f.create_dataset('kspace', data=kspace_coils_merged_padded_multi_slice)
+                        h5f.create_dataset('reconstruction', data=images_coils_merged_padded_multi_slice)
+                        h5f.close()
 
             if (t == (N_available_scans - 1)) | (n_PD_scans >= N_wanted_scans):
                 break
