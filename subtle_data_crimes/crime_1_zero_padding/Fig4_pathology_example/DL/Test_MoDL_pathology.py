@@ -4,21 +4,14 @@
 ###############################################################################
 import logging
 import os
+
 import matplotlib.pyplot as plt
 import numpy as np
-import sigpy as sp
 import torch
-import torch.nn as nn
 from MoDL_single import UnrolledModel
-# from subtle_data_crimes.crime_1_zero_padding.Fig4_pathology_example.DL.utils.subsample_fastmri import MaskFunc
-# from subtle_data_crimes.crime_1_zero_padding.Fig4_pathology_example.DL.utils.subsample_var_dens import \
-#     MaskFuncVarDens_1D
-# from torch.utils.data import DataLoader
-from subtle_data_crimes.crime_1_zero_padding.Fig4_pathology_example.DL.utils.datasets import create_data_loaders
-from PIL import Image
-
-# import custom libraries
 from utils import complex_utils as cplx
+
+from subtle_data_crimes.crime_1_zero_padding.Fig4_pathology_example.DL.utils.datasets import create_data_loaders
 from subtle_data_crimes.functions import error_metrics
 
 N_examples_stats = 1  # number of examples that will be used for computing the mean and STD
@@ -27,8 +20,6 @@ print('N_examples_stats=', N_examples_stats)
 R_vec = np.array([4])
 R = R_vec[0]
 print('R={}'.format(R))
-
-
 
 use_multiple_GPUs_flag = 0
 
@@ -66,16 +57,15 @@ unrolls = 6
 ######################################################################################################
 
 
-pad_ratio_vec = np.array([1,2])
-sampling_type_vec = np.array([1,2])  # 0 = random, 1 = weak var-dens, 2 = strong var-dens
+pad_ratio_vec = np.array([1, 2])
+sampling_type_vec = np.array([1, 2])  # 0 = random, 1 = weak var-dens, 2 = strong var-dens
 
 # data_type = 'test'
 data_type = 'pathology_1'
-#data_type = 'pathology_2'
+# data_type = 'pathology_2'
 
-if data_type=='pathology_1':
+if data_type == 'pathology_1':
     pathology_slice = 22
-
 
 # create a folder for the test figures
 figs_foldername = data_type + '_figs_R{}'.format(R)
@@ -126,7 +116,6 @@ for r in range(R_vec.shape[0]):
 
             params.pad_ratio = pad_ratio  # zero-padding ratio
 
-
             FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/zpad_FatSat_data/"
 
             # path to test data
@@ -141,7 +130,7 @@ for r in range(R_vec.shape[0]):
             params.calib = np.array([calib_x, calib_y])
 
             # Remember - the data loader defines the sampling mask. The test data must undergo the same transform as train data!
-            test_loader = create_data_loaders(params,shuffle_flag=False)
+            test_loader = create_data_loaders(params, shuffle_flag=False)
 
             N_test_images = len(test_loader.dataset)
             print('N_test_images =', N_test_images)
@@ -185,7 +174,7 @@ for r in range(R_vec.shape[0]):
                 with torch.no_grad():
                     for i_batch, data in enumerate(test_loader):
 
-                        if i_batch==pathology_slice:  # process only the first image (for the paper figure)
+                        if i_batch == pathology_slice:  # process only the first image (for the paper figure)
 
                             input_batch, target_batch, mask_batch = data
 
@@ -197,18 +186,18 @@ for r in range(R_vec.shape[0]):
                                 print('n_test_images=', n_test_images)
 
                             # # display the mask (before converting it to torch tensor)
-                            #if (i_batch == 0) & (checkpoint_num == checkpoint_vec[-1]):
+                            # if (i_batch == 0) & (checkpoint_num == checkpoint_vec[-1]):
 
-                                # display mask
-                                #print('mask_batch shape:',mask_batch.shape)
-                                # mask_squeezed = mask_batch[0, :, :, 0].squeeze()
-                                # np.save('mask_squeezed', mask_squeezed)
-                                # print('saved mask squeezed')
-                                # fig = plt.figure()
-                                # plt.imshow(mask_squeezed, cmap="gray")
-                                # plt.title(params.sampling_flag + ' epoch 0, i_batch {}'.format(i_batch))
-                                # plt.show()
-                                # fig.savefig('mask_i_batch{}.png'.format(i_batch))
+                            # display mask
+                            # print('mask_batch shape:',mask_batch.shape)
+                            # mask_squeezed = mask_batch[0, :, :, 0].squeeze()
+                            # np.save('mask_squeezed', mask_squeezed)
+                            # print('saved mask squeezed')
+                            # fig = plt.figure()
+                            # plt.imshow(mask_squeezed, cmap="gray")
+                            # plt.title(params.sampling_flag + ' epoch 0, i_batch {}'.format(i_batch))
+                            # plt.show()
+                            # fig.savefig('mask_i_batch{}.png'.format(i_batch))
 
                             # move data to GPU
                             if (torch.cuda.device_count() > 1) & (use_multiple_GPUs_flag == 1):
@@ -237,7 +226,7 @@ for r in range(R_vec.shape[0]):
                                 SSIM_test_list.append(MoDL_err.SSIM)
 
                                 # --------- prep for display --------------
-                                im_target_rotated = np.rot90(np.abs(im_target),2)
+                                im_target_rotated = np.rot90(np.abs(im_target), 2)
                                 rec_DL_rotated = np.rot90(np.abs(im_out), 2)
 
                                 gold_dict[pad_ratio, samp_type] = im_target_rotated
@@ -292,7 +281,6 @@ for r in range(R_vec.shape[0]):
 
                                 # ---------------------------
 
-
                                 fig = plt.figure()
                                 plt.subplot(1, 2, 1)
                                 plt.imshow(rec_DL_rotated, cmap="gray")
@@ -309,9 +297,8 @@ for r in range(R_vec.shape[0]):
                                 plt.suptitle(
                                     f'DL R{R} pad_x{pad_ratio_str} - example {data_type}')
                                 plt.show()
-                                figname = figs_foldername + '/im{}_pad_{}'.format(i_batch,pad_ratio_str)
+                                figname = figs_foldername + '/im{}_pad_{}'.format(i_batch, pad_ratio_str)
                                 fig.savefig(figname)
-
 
                                 # fig = plt.figure()
                                 # plt.imshow(np.rot90(np.abs(im_target), 2), cmap="gray")
@@ -326,12 +313,11 @@ for r in range(R_vec.shape[0]):
                                 # figname = figs_foldername + '/target{}_pad_{}'.format(i_batch,pad_ratio_str)
                                 # fig.savefig(figname,format='eps', dpi=1000)
 
-results_dir =  data_type + f'_results_R{R}/'
+results_dir = data_type + f'_results_R{R}/'
 if not os.path.exists(results_dir):
     os.makedirs(results_dir)
 
 gold_filename = results_dir + '/gold_dict.npy'
-np.save(gold_filename , gold_dict)
+np.save(gold_filename, gold_dict)
 DL_rec_filename = results_dir + '/DL_dict.npy'
 np.save(DL_rec_filename, DL_recs_dict)
-

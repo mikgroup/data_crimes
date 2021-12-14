@@ -9,36 +9,22 @@
 
 ##########################################################################################
 import os
-import numpy as np
-import h5py
-import sys
-# add path to functions library - when running on mikQNAP
 
-import matplotlib.pyplot as plt
-from subtle_data_crimes.functions.utils import merge_multicoil_data
+import h5py
+import numpy as np
 import sigpy as sp
 from sigpy import mri as mr
-#from matplotlib import interactive
-#from functions.demos_funcs import demo1_zero_pad_MAG_run_exps
-from subtle_data_crimes.functions.utils import pad_multicoil_ksp,save_as_png
-from subtle_data_crimes.functions import error_metrics
-#from functions.sampling_funcs import genPDF, genSampling
-from subtle_data_crimes.functions import gen_2D_var_dens_mask
 
-
-#
-# sys.path.append("/home/efrat/anaconda3/")
-# sys.path.append("/home/efrat/anaconda3/lib/python3.7/site-packages/")  # path to sigpy
+from subtle_data_crimes.functions.sampling_funcs import gen_2D_var_dens_mask
 
 #################################################################################
 ## Experiment set-up
 #################################################################################
 
 R = 4
-pad_ratio_vec = np.array([1,2])
+pad_ratio_vec = np.array([1, 2])
 
-
-sampling_type_vec = np.array([1,2])  # 0 = random, 1 = weak var-dens, 2 = strong var-dens
+sampling_type_vec = np.array([1, 2])  # 0 = random, 1 = weak var-dens, 2 = strong var-dens
 sampling_flag = '2D'
 
 num_slices = 1
@@ -46,9 +32,9 @@ num_slices = 1
 im_type_str = 'full_im'  # Options: 'full_im' / 'blocks' (blocks are used for training Deep Learning models, not for CS & DictL).
 
 data_type = 'pathology_1'
-#data_type = 'pathology_2'
+# data_type = 'pathology_2'
 
-if data_type=='pathology_1':
+if data_type == 'pathology_1':
     pathology_slice = 22
 
 lamda = 1e-3
@@ -67,10 +53,10 @@ CS_recs_dict = {}  # a python dictionary that will contain the reconstructions o
 for pad_i, pad_ratio in enumerate(pad_ratio_vec):
     print(f'##################### pad ratio {pad_ratio} ################################')
 
-    t = 0 # counts loaded scans. each scan contains multiple slices.
-    ns = 0 # counts loaded slices
+    t = 0  # counts loaded scans. each scan contains multiple slices.
+    ns = 0  # counts loaded slices
 
-    if (pad_ratio==1) | (pad_ratio==2):
+    if (pad_ratio == 1) | (pad_ratio == 2):
         pad_ratio_str = int(pad_ratio)
 
     # # update the next field and make sure that it's the same one as defined in Fig4_pathology_example/data_prep.py
@@ -81,52 +67,50 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
 
     files_list = os.listdir(data_path)
 
-
-    while ns<num_slices:
+    while ns < num_slices:
 
         print(' === loading h5 file {} === '.format(t))
         # Load k-space data
         filename_h5 = data_path + files_list[t]
 
-        #print('t=', t)
-        #print('filename_h5=', filename_h5)
+        # print('t=', t)
+        # print('filename_h5=', filename_h5)
         f = h5py.File(filename_h5, 'r')
 
         t += 1  # update the number of LOADED scans. Each scan contains multiple slices
 
         kspace_preprocessed_multislice = f["kspace"]
-        im_RSS_multislice = f["reconstruction"]  # these are the RSS images produced from the zero-padded k-space - see fig. 1 in the paper
+        im_RSS_multislice = f[
+            "reconstruction"]  # these are the RSS images produced from the zero-padded k-space - see fig. 1 in the paper
 
         n_slices_in_scan = kspace_preprocessed_multislice.shape[0]
-
 
         print(f'pad_ratio {pad_ratio}  t={t}')
 
         for s_i in range(n_slices_in_scan):
 
-            if s_i==pathology_slice:
+            if s_i == pathology_slice:
                 print(f'slice {s_i}')
 
-                kspace_slice = kspace_preprocessed_multislice[s_i,:,:].squeeze()
-                im_RSS = im_RSS_multislice[s_i,:,:].squeeze()
+                kspace_slice = kspace_preprocessed_multislice[s_i, :, :].squeeze()
+                im_RSS = im_RSS_multislice[s_i, :, :].squeeze()
 
                 ns += 1  # number of slices
                 print(f'ns={ns}')
 
                 imSize = im_RSS.shape
 
+                kspace_slice = np.expand_dims(kspace_slice, axis=0)  # restore coil dimension (for Sigpy data format)
+                _, NX_padded, NY_padded = kspace_slice.shape  # get size. Notice: the first one is the coils dimension
 
-                kspace_slice = np.expand_dims(kspace_slice, axis=0) # restore coil dimension (for Sigpy data format)
-                _ , NX_padded, NY_padded = kspace_slice.shape  # get size. Notice: the first one is the coils dimension
-
-                virtual_sens_maps = np.ones_like(kspace_slice)  # sens maps are all ones because we have a "single-coil" magnitude image.
+                virtual_sens_maps = np.ones_like(
+                    kspace_slice)  # sens maps are all ones because we have a "single-coil" magnitude image.
 
                 # ------- gold standard rec -----------------
 
                 rec_gold = sp.ifft(kspace_slice)
-                rec_gold = rec_gold[0,:,:].squeeze() # remove artificial coil dim
+                rec_gold = rec_gold[0, :, :].squeeze()  # remove artificial coil dim
                 rec_gold_rotated = np.abs(np.rot90(rec_gold, 2))
-
 
                 # fig = plt.figure()
                 # plt.imshow(np.rot90(np.abs(rec_gold),2), cmap="gray")
@@ -134,11 +118,11 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
                 # plt.colorbar()
                 # plt.show()
 
-
                 # check NaN values
-                assert np.isnan(rec_gold).any() == False, 'there are NaN values in rec_gold! scan {} slice {}'.format(n,s_i)
+                assert np.isnan(rec_gold).any() == False, 'there are NaN values in rec_gold! scan {} slice {}'.format(n,
+                                                                                                                      s_i)
 
-                img_shape = np.array([NX_padded,NY_padded])
+                img_shape = np.array([NX_padded, NY_padded])
 
                 # ----- Compressed Sensing recon ----------
 
@@ -148,7 +132,7 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
                         samp_type = 'random'
                     elif sampling_type_vec[j] == 1:  # weak variable-density
                         samp_type = 'weak'
-                    elif sampling_type_vec[j] == 2: # strong variable-density
+                    elif sampling_type_vec[j] == 2:  # strong variable-density
                         samp_type = 'strong'
 
                     data_filename = f'{data_type}_R{R}_{samp_type}_VD'
@@ -158,10 +142,10 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
                     calib_y = int(12 * im_RSS.shape[1] / 640)
                     calib = np.array([calib_x, calib_y])
 
-
                     mask, pdf, poly_degree = gen_2D_var_dens_mask(R, imSize, samp_type, calib=calib)
 
-                    mask_expanded = np.expand_dims(mask, axis=0)  # add the empty coils dimension, for compatibility with Sigpy's dimension convention
+                    mask_expanded = np.expand_dims(mask,
+                                                   axis=0)  # add the empty coils dimension, for compatibility with Sigpy's dimension convention
                     kspace_sampled = np.multiply(kspace_slice, mask_expanded)
 
                     rec = mr.app.L1WaveletRecon(kspace_sampled, virtual_sens_maps, lamda=lamda, show_pbar=False).run()
@@ -169,7 +153,6 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
 
                     gold_dict[pad_ratio, samp_type] = rec_gold_rotated
                     CS_recs_dict[pad_ratio, samp_type] = rec_CS_rotated
-
 
                     # # --------- TODO: move this to the display code -----------
                     # A = error_metrics(rec_gold, rec)
@@ -273,19 +256,17 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
                     #     figname = figs_folder + f'/rec_gold_full_size.eps'
                     #     fig.savefig(figname, dpi=1000)
 
-
-
 # --------------------- save ----------------------
 # save results
-#np.savez(data_filename,NRMSE_arr=NRMSE_arr,masks_dict=masks_dict,R_vec=R_vec,pad_ratio_vec=pad_ratio_vec,
+# np.savez(data_filename,NRMSE_arr=NRMSE_arr,masks_dict=masks_dict,R_vec=R_vec,pad_ratio_vec=pad_ratio_vec,
 #         sampling_type_vec=sampling_type_vec,sampling_flag=sampling_flag,lamda_vec=lamda_vec,num_slices=num_slices)
 
 # save the recons
-results_dir =  data_type + f'_results_R{R}/'
+results_dir = data_type + f'_results_R{R}/'
 if not os.path.exists(results_dir):
     os.makedirs(results_dir)
 
 gold_filename = results_dir + '/gold_dict.npy'
-np.save(gold_filename , gold_dict)
+np.save(gold_filename, gold_dict)
 CS_rec_filename = results_dir + '/CS_dict.npy'
 np.save(CS_rec_filename, CS_recs_dict)

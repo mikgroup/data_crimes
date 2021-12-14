@@ -13,24 +13,22 @@ basic_data_folder - it should be the same as the output folder defined in the sc
 ###############################################################################################
 
 
-# %matplotlib notebook
-import os, sys
+import argparse
+import copy
 import logging
+# %matplotlib notebook
+import os
+
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
-import copy
 
-import matplotlib.pyplot as plt
+from subtle_data_crimes.crime_1_zero_padding.Fig4_pathology_example.DL.MoDL_single import UnrolledModel
 from subtle_data_crimes.crime_1_zero_padding.Fig4_pathology_example.DL.utils import complex_utils as cplx
 from subtle_data_crimes.crime_1_zero_padding.Fig4_pathology_example.DL.utils.datasets import \
     create_data_loaders  # , calc_scaling_factor
-from subtle_data_crimes.crime_1_zero_padding.Fig4_pathology_example.DL.MoDL_single import UnrolledModel
 from subtle_data_crimes.functions import error_metrics
-import argparse
-
-
-
 
 
 def create_arg_parser():
@@ -48,20 +46,22 @@ if __name__ == '__main__':
 
     args = create_arg_parser().parse_args()
 
-    if args.pad_ratio >=3:
+    if args.pad_ratio >= 3:
         use_multiple_GPUs_flag = 1
     else:
         use_multiple_GPUs_flag = 0
 
-    #use_multiple_GPUs_flag = 0
+    # use_multiple_GPUs_flag = 0
 
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
     device = torch.device('cuda:{}'.format(args.gpu) if torch.cuda.is_available() else 'cpu')
 
+
     def build_optim(args, params):
         optimizer = torch.optim.Adam(params, lr=args.lr, weight_decay=args.weight_decay)
         return optimizer
+
 
     class Namespace:
         def __init__(self, **kwargs):
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     # Hyper parameters
     params = Namespace()
     params.batch_size = 1
-    #params.num_grad_steps = 6  # number of unrolls
+    # params.num_grad_steps = 6  # number of unrolls
     params.num_cg_steps = 8
     params.share_weights = True
     params.modl_lamda = 0.05
@@ -79,12 +79,12 @@ if __name__ == '__main__':
     params.weight_decay = 0
     params.lr_step_size = 500
     params.lr_gamma = 0.5
-    #params.epoch = 70 # This was used for R4 runs
+    # params.epoch = 70 # This was used for R4 runs
     params.epoch = 70
     params.num_grad_steps = args.unrolls
     params.R = args.R
-    params.pad_ratio = args.pad_ratio # zero-padding ratio
-    #params.sampling_flag = 'var_dens_1D'
+    params.pad_ratio = args.pad_ratio  # zero-padding ratio
+    # params.sampling_flag = 'var_dens_1D'
     print('2D VAR DENS')
     params.sampling_flag = 'var_dens_2D'
     params.var_dens_flag = args.var_dens_flag
@@ -92,22 +92,21 @@ if __name__ == '__main__':
     params.NY_full_FOV = 372
     # params.sampling_flag = 'random_uniform'
 
-    im_type_str = 'blocks' # for training and validation we use blocks, but for test (inference) we use full images
+    im_type_str = 'blocks'  # for training and validation we use blocks, but for test (inference) we use full images
 
     NX_block = 256
     NY_block = 134
 
-    block_to_im_ratio = NX_block/640
+    block_to_im_ratio = NX_block / 640
 
     # calib is assumed to be 12 for NX=640
     calib_x = int(12 * block_to_im_ratio * params.pad_ratio)
-    calib_y = int(12 * block_to_im_ratio * params.pad_ratio * (NY_block/NX_block))
+    calib_y = int(12 * block_to_im_ratio * params.pad_ratio * (NY_block / NX_block))
     params.calib = np.array([calib_x, calib_y])
 
     params_val = copy.copy(params)
 
-
-    FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/zpad_FatSat_data/" # FatSatPD
+    FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/zpad_FatSat_data/"  # FatSatPD
     print('FatSatPD data is used!')
 
     FatSat_processed_data_folder = FatSat_processed_data_folder + '/'
@@ -126,36 +125,31 @@ if __name__ == '__main__':
     run_foldername = 'R{}_pad_{}_unrolls_{}_{}_var_dens'.format(params.R, str(int(100 * params.pad_ratio)),
                                                                 args.unrolls, args.var_dens_flag)
 
-
     print(params.data_path)
 
-    print('num unrolls=',args.unrolls)
-    print('gpu = ',args.gpu)
-    print('pad_ratio=',params.pad_ratio)
+    print('num unrolls=', args.unrolls)
+    print('gpu = ', args.gpu)
+    print('pad_ratio=', params.pad_ratio)
     print('R=', params.R)
-    print('var_dens_flag=',params.var_dens_flag)
-
-
+    print('var_dens_flag=', params.var_dens_flag)
 
     # Create data loader
     train_loader = create_data_loaders(params)
     val_loader = create_data_loaders(params_val)
 
-
-    N_train_slices = len(train_loader.dataset) # assuming that batch_size = 1, N_train_slices = N_train_datasests
+    N_train_slices = len(train_loader.dataset)  # assuming that batch_size = 1, N_train_slices = N_train_datasests
     N_val_slices = len(val_loader.dataset)  # assuming that batch_size = 1, N_train_slices = N_train_datasests
     print('N_train_slices=', N_train_slices)
-    print('N_val_slices=',N_val_slices)
-
+    print('N_val_slices=', N_val_slices)
 
     # Create an unrolled model
     single_MoDL = UnrolledModel(params).to(device)
 
-
     # Data Parallelism - enables running on multiple GPUs
-    if (torch.cuda.device_count()>1) & (use_multiple_GPUs_flag==1):
+    if (torch.cuda.device_count() > 1) & (use_multiple_GPUs_flag == 1):
         print("Now using ", torch.cuda.device_count(), "GPUs!")
-        single_MoDL = nn.DataParallel(single_MoDL, device_ids =  [0,1,2,3]) # the first index on the device_ids determines which GPU will be used as a staging area before scattering to the other GPUs
+        single_MoDL = nn.DataParallel(single_MoDL, device_ids=[0, 1, 2,
+                                                               3])  # the first index on the device_ids determines which GPU will be used as a staging area before scattering to the other GPUs
     else:
         print("Now using a single GPU")
 
@@ -164,11 +158,9 @@ if __name__ == '__main__':
     criterion = nn.L1Loss()
     loss_train_data = list([])
 
-
     # create sub-directory for saving checkpoints:
     if not os.path.exists(run_foldername + "/checkpoints"):
         os.makedirs(run_foldername + "/checkpoints")
-
 
     optimizer.zero_grad()
     num_accumulated_iters = 20  # accumulate iters (this enables using batch_size=1 and fitting large networks on a single GPU)
@@ -181,8 +173,8 @@ if __name__ == '__main__':
         avg_loss = 0.
 
         for iter, data in enumerate(train_loader):
-            #torch.set_grad_enabled(True)
-            #input, target, mask, target_no_JPEG = data
+            # torch.set_grad_enabled(True)
+            # input, target, mask, target_no_JPEG = data
             input, target, mask = data
 
             # display and print the mask (before converting it to torch tensor)
@@ -201,7 +193,7 @@ if __name__ == '__main__':
             # mask = mask.to(device)
 
             # move data to GPU
-            if (torch.cuda.device_count()>1) & (use_multiple_GPUs_flag==1):
+            if (torch.cuda.device_count() > 1) & (use_multiple_GPUs_flag == 1):
                 input = input.to(f'cuda:{single_MoDL.device_ids[0]}')
                 target = target.to(f'cuda:{single_MoDL.device_ids[0]}')
                 mask = mask.to(f'cuda:{single_MoDL.device_ids[0]}')
@@ -231,7 +223,6 @@ if __name__ == '__main__':
             # plt.colorbar()
             # plt.show()
 
-
             # calc training loss
             loss = criterion(im_out, target)
 
@@ -248,7 +239,6 @@ if __name__ == '__main__':
 
             loss_train_data.append(loss.item())
 
-
             avg_loss = 0.99 * avg_loss + 0.01 * loss.item() if iter > 0 else loss.item()
 
             # logging info
@@ -259,7 +249,7 @@ if __name__ == '__main__':
                     f'Loss = {loss.item():.4g} Avg Loss = {avg_loss:.4g}'
                 )
 
-            if (iter == 0) & ((epoch <=10) | (epoch % 10 ==0 )):
+            if (iter == 0) & ((epoch <= 10) | (epoch % 10 == 0)):
                 fig = plt.figure()
                 loss_train_data_arr = np.asarray(loss_train_data)
                 plt.plot(loss_train_data_arr)
@@ -272,7 +262,7 @@ if __name__ == '__main__':
                 print('loss fig saved')
 
             # debugging plots - show training example
-            if (iter==0) & ((epoch <=10) | (epoch % 10 ==0 )):
+            if (iter == 0) & ((epoch <= 10) | (epoch % 10 == 0)):
                 input_detached = input.detach()
                 out_detached = im_out.detach()
                 target_detached = target.detach()
@@ -284,7 +274,7 @@ if __name__ == '__main__':
                 MoDL_err.calc_NRMSE()
                 MoDL_err.calc_SSIM()
 
-                fig = plt.figure(figsize=(15,7))
+                fig = plt.figure(figsize=(15, 7))
 
                 plt.subplot(1, 3, 1)
                 plt.imshow(single_MoDL.zf_im_4plot, cmap="gray")
@@ -302,7 +292,7 @@ if __name__ == '__main__':
                 plt.colorbar(shrink=0.5)
                 # plt.axis('off')
                 plt.title('target')
-                plt.suptitle('TRAINING example - iter {} epoch {} - check scale!!!'.format(iter,epoch))
+                plt.suptitle('TRAINING example - iter {} epoch {} - check scale!!!'.format(iter, epoch))
                 plt.show()
                 fig.savefig(run_foldername + '/sanity_check_fig_{}.png'.format(monitoring_cnt))
 
@@ -336,13 +326,13 @@ if __name__ == '__main__':
                             val_out_batch = single_MoDL(val_input_batch.float(), mask=val_mask_batch)
 
                             for iii in range(1):
-                                #print('iii=',iii)
+                                # print('iii=',iii)
                                 val_im_input = cplx.to_numpy(val_input_batch.cpu())[iii, :, :]
                                 val_im_target = cplx.to_numpy(val_target_batch.cpu())[iii, :, :]
                                 val_im_out = cplx.to_numpy(val_out_batch.cpu())[iii, :, :]
 
                                 print('-----------------------------')
-                                print('val_im_target shape:',val_im_target.shape)
+                                print('val_im_target shape:', val_im_target.shape)
                                 print('-----------------------------')
 
                                 MoDL_val_err = error_metrics(np.abs(val_im_target), np.abs(val_im_out))
@@ -371,7 +361,6 @@ if __name__ == '__main__':
                                 plt.show()
                                 fig.savefig(run_foldername + '/val_check_fig_{}.png'.format(monitoring_cnt))
                                 print('validation sanity fig saved')
-
 
                 # # ---- old plot ----
                 # input_numpy = cplx.to_numpy(input.cpu())[0, :, :]
@@ -415,9 +404,6 @@ if __name__ == '__main__':
                 #
                 # print('monitoring fig saved')
 
-
-
-
         # Saving the model
         exp_dir = run_foldername + "/checkpoints/"
         torch.save(
@@ -432,24 +418,18 @@ if __name__ == '__main__':
             f=os.path.join(exp_dir, 'model_%d.pt' % (epoch))
         )
 
+
         # save the loss
-        def saveList(myList,filename):
+        def saveList(myList, filename):
             # the filename should mention the extension 'npy'
-            np.save(filename,myList)
+            np.save(filename, myList)
             print("Saved successfully!")
 
-        saveList(loss_train_data,run_foldername + '/loss_train_data.npy')
+
+        saveList(loss_train_data, run_foldername + '/loss_train_data.npy')
 
         # # how to load the list loss_train_data into a numpy array:
         # def loadList(filename):
         #     # the filename should mention the extension 'npy'
         #     tempNumpyArray=np.load(filename)
         #     return tempNumpyArray.tolist()
-
-
-
-
-
-
-
-

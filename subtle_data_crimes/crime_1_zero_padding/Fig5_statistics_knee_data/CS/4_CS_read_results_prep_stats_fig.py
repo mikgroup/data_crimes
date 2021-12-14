@@ -1,27 +1,14 @@
-
-import numpy as np
-
-import sys
-
-import altair as alt
-import pandas as pd
-
-
 import matplotlib.pyplot as plt
-import sigpy as sp
-from sigpy import mri as mr
-from subtle_data_crimes.functions import error_metrics
-
+import numpy as np
 
 R = np.array([4])
 
-N_examples = 122 # the number of slices in our test set
-pad_ratio_vec = np.array([1,1.25,1.5,1.75,2])
-sampling_type_vec = np.array([1,2])  # 0 = random, 1 = weak var-dens, 2 = strong var-dens
+N_examples = 122  # the number of slices in our test set
+pad_ratio_vec = np.array([1, 1.25, 1.5, 1.75, 2])
+sampling_type_vec = np.array([1, 2])  # 0 = random, 1 = weak var-dens, 2 = strong var-dens
 
 CS_test_set_NRMSE_arr = np.empty([N_examples, pad_ratio_vec.shape[0], sampling_type_vec.shape[0]])
 CS_test_set_SSIM_arr = np.empty([N_examples, pad_ratio_vec.shape[0], sampling_type_vec.shape[0]])
-
 
 for samp_i in range(sampling_type_vec.shape[0]):
     if sampling_type_vec[samp_i] == 1:
@@ -30,7 +17,7 @@ for samp_i in range(sampling_type_vec.shape[0]):
         samp_str = 'strong_VD'
 
     for pad_i, pad_ratio in enumerate(pad_ratio_vec):
-        if (pad_ratio==1.0) | (pad_ratio==2.0):
+        if (pad_ratio == 1.0) | (pad_ratio == 2.0):
             pad_ratio = int(pad_ratio)
 
         logdir = 'logs/' + samp_str + '_pad_ratio_{}'.format(pad_ratio)
@@ -42,15 +29,13 @@ for samp_i in range(sampling_type_vec.shape[0]):
         CS_NRMSE_arr = container['CS_NRMSE_arr']
         CS_SSIM_arr = container['CS_SSIM_arr']
 
-        CS_test_set_NRMSE_arr[:,pad_i,samp_i] = CS_NRMSE_arr
+        CS_test_set_NRMSE_arr[:, pad_i, samp_i] = CS_NRMSE_arr
         CS_test_set_SSIM_arr[:, pad_i, samp_i] = CS_SSIM_arr
-
 
 print('')
 
 filename = 'CS_test_results.npz'
-np.savez(filename,CS_test_set_NRMSE_arr=CS_test_set_NRMSE_arr,CS_test_set_SSIM_arr=CS_test_set_SSIM_arr)
-
+np.savez(filename, CS_test_set_NRMSE_arr=CS_test_set_NRMSE_arr, CS_test_set_SSIM_arr=CS_test_set_SSIM_arr)
 
 #################### prep for plots #################
 
@@ -59,7 +44,7 @@ x = pad_ratio_vec
 x_ticks_labels = []
 for i in range(pad_ratio_vec.shape[0]):
     pad_num = pad_ratio_vec[i]
-    if pad_num % 1 ==0.0:
+    if pad_num % 1 == 0.0:
         pad_str = str(int(pad_num))
         x_ticks_labels.append('x{}'.format(pad_str))
     elif pad_num % 1 == 0.5:
@@ -69,10 +54,9 @@ for i in range(pad_ratio_vec.shape[0]):
         pad_str = {}
         x_ticks_labels.append('')
 
-
 ############ Display the results graph ###############
-markers=['o', 'd', 's', 'h', '8']
-colorslist = ['c','m','k']
+markers = ['o', 'd', 's', 'h', '8']
+colorslist = ['c', 'm', 'k']
 
 # NRMSE figure
 fig = plt.figure()
@@ -88,13 +72,13 @@ for j in range(sampling_type_vec.shape[0]):
     elif sampling_type_vec[j] == 2:
         label_str = 'strong VD'
 
-    #plt.errorbar(pad_ratio_vec, NRMSE_av_per_pad_N, yerr=NRMSE_std_per_pad_N, linestyle='solid', label=label_str,
+    # plt.errorbar(pad_ratio_vec, NRMSE_av_per_pad_N, yerr=NRMSE_std_per_pad_N, linestyle='solid', label=label_str,
     #             marker=markers[j])
     plt.plot(pad_ratio_vec, NRMSE_av_per_pad_N, linestyle='solid', label=label_str,
-                 marker=markers[j])
+             marker=markers[j])
 
-    plt.fill_between(pad_ratio_vec, (NRMSE_av_per_pad_N - NRMSE_std_per_pad_N/2), (NRMSE_av_per_pad_N + NRMSE_std_per_pad_N/2), alpha=0.1)
-
+    plt.fill_between(pad_ratio_vec, (NRMSE_av_per_pad_N - NRMSE_std_per_pad_N / 2),
+                     (NRMSE_av_per_pad_N + NRMSE_std_per_pad_N / 2), alpha=0.1)
 
 plt.ylabel('NRMSE', fontsize=20)
 ax = plt.gca()
@@ -104,12 +88,11 @@ plt.ylim(0.0035, 0.02)
 ax.set_yticks((0.005, 0.01, 0.015, 0.02))
 plt.yticks(fontsize=20)
 plt.xticks(fontsize=20)
-ax.legend(fontsize=20,loc='lower left')
+ax.legend(fontsize=20, loc='lower left')
 plt.show()
 figname_NRMSE = 'CS_NRMSE_stats'
 fig.savefig(fname=figname_NRMSE)
 plt.show()
-
 
 # SSIM figure
 fig = plt.figure()
@@ -143,4 +126,3 @@ plt.show()
 
 figname_SSIM = 'CS_SSIM_stats'
 fig.savefig(fname=figname_SSIM)
-

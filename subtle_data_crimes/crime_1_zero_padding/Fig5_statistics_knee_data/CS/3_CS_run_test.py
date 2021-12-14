@@ -20,27 +20,24 @@
 ####################################################################
 
 import os
-import numpy as np
-import h5py
-import sys
-
-import matplotlib.pyplot as plt
-import sigpy as sp
-from sigpy import mri as mr
-from subtle_data_crimes.functions import error_metrics
-from subtle_data_crimes.functions import gen_2D_var_dens_mask
 from optparse import OptionParser
 
+import h5py
+import matplotlib.pyplot as plt
 # limit the number of CPUs that the process can take
 import mkl
-mkl.set_num_threads(5)  # the number in the brackets determines the number of CPUs. 1 is recommended for the DictL algorithm! Otherwise there's a lot of overhead (when the run is spread accross multiple cpus) and the comptuation time becomes longer.
+import numpy as np
+import sigpy as sp
+from sigpy import mri as mr
 
+from subtle_data_crimes.functions import error_metrics, gen_2D_var_dens_mask
 
-sys.path.append("/home/efrat/anaconda3/")
-sys.path.append("/home/efrat/anaconda3/lib/python3.7/site-packages/")  # path to sigpy
+mkl.set_num_threads(
+    5)  # the number in the brackets determines the number of CPUs. 1 is recommended for the DictL algorithm! Otherwise there's a lot of overhead (when the run is spread accross multiple cpus) and the comptuation time becomes longer.
 
 # limit the number of CPUs that the process can take to 1
 import mkl
+
 mkl.set_num_threads(
     1)  # the number in the brackets determines the number of CPUs. 1 is recommended for the DictL algorithm! Otherwise there's a lot of overhead (when the run is spread accross multiple cpus) and the comptuation time becomes longer.
 
@@ -74,7 +71,7 @@ if __name__ == '__main__':
 
     # hard-coded variables
     device = sp.cpu_device  # which device to use (not all is supported on GPU)
-    #mode = 'omp'  # for the dictionary learning algorithm
+    # mode = 'omp'  # for the dictionary learning algorithm
 
     # sampling parameters
     R = np.asfarray(args.R).astype('int')
@@ -94,15 +91,14 @@ if __name__ == '__main__':
     loaded_sampling_type_vec = container['sampling_type_vec']
     loaded_optimal_lamda_arr = container['optimal_lamda_arr']
 
-
-    if samp_type=='weak':
-        samp_i = np.argwhere(loaded_sampling_type_vec==1)  # 0 = random, 1 = strong var-dens, 2 = weak var-dens
-    elif samp_type=='strong':
+    if samp_type == 'weak':
+        samp_i = np.argwhere(loaded_sampling_type_vec == 1)  # 0 = random, 1 = strong var-dens, 2 = weak var-dens
+    elif samp_type == 'strong':
         samp_i = np.argwhere(loaded_sampling_type_vec == 2)  # 0 = random, 1 = strong var-dens, 2 = weak var-dens
 
-    pad_i = np.argwhere(loaded_pad_ratio_vec==pad_ratio)
+    pad_i = np.argwhere(loaded_pad_ratio_vec == pad_ratio)
 
-    CS_lamda = loaded_optimal_lamda_arr[pad_i,samp_i].item()
+    CS_lamda = loaded_optimal_lamda_arr[pad_i, samp_i].item()
     print(f'CS lambda = {CS_lamda}')
 
     # initialize dictionaries and arrays
@@ -116,10 +112,9 @@ if __name__ == '__main__':
     # Create log directory - this is useful when sending many runs in parallel
     logdir = args.logdir
 
-    print('logdir:',logdir)
+    print('logdir:', logdir)
     if not os.path.exists(logdir):
         os.makedirs(logdir)
-
 
     # #################################################################################
     # ##                                Experiments
@@ -169,7 +164,7 @@ if __name__ == '__main__':
             print(f'ns {ns}/{num_slices}')
 
             # ------- run recon experiment -----------------
-            #print('Gold standard rec from fully sampled data...')
+            # print('Gold standard rec from fully sampled data...')
 
             rec_gold = sp.ifft(kspace_slice)
 
@@ -182,8 +177,9 @@ if __name__ == '__main__':
             #     plt.show()
 
             # check NaN values
-            assert np.isnan(rec_gold).any() == False, 'there are NaN values in rec_gold! scan file {} slice {}'.format(filename_h5,
-                                                                                                                  s_i)
+            assert np.isnan(rec_gold).any() == False, 'there are NaN values in rec_gold! scan file {} slice {}'.format(
+                filename_h5,
+                s_i)
             gold_dict[ns - 1] = rec_gold
             imSize = im_RSS.shape
 
@@ -210,16 +206,17 @@ if __name__ == '__main__':
             #     #plt.imshow(mask, cmap="gray")
             #     plt.show()
 
-
             # # ###################################### CS rec  ################################################
 
             mask_expanded = np.expand_dims(mask, axis=0)  # add the empty coils
-            ksp_padded_sampled_expanded = np.expand_dims(ksp_padded_sampled,axis=0)
-            virtual_sens_maps = np.ones_like(ksp_padded_sampled_expanded)  # sens maps are all ones because we have a "single-coil" magnitude image.
+            ksp_padded_sampled_expanded = np.expand_dims(ksp_padded_sampled, axis=0)
+            virtual_sens_maps = np.ones_like(
+                ksp_padded_sampled_expanded)  # sens maps are all ones because we have a "single-coil" magnitude image.
 
             # CS recon from sampled data
             print('CS rec from sub-sampled data...')
-            rec_CS = mr.app.L1WaveletRecon(ksp_padded_sampled_expanded, virtual_sens_maps, lamda=CS_lamda, show_pbar=False).run()
+            rec_CS = mr.app.L1WaveletRecon(ksp_padded_sampled_expanded, virtual_sens_maps, lamda=CS_lamda,
+                                           show_pbar=False).run()
 
             CS_Err = error_metrics(rec_gold, rec_CS)
             CS_Err.calc_NRMSE()
@@ -230,17 +227,17 @@ if __name__ == '__main__':
 
             print(f'NRMSE {CS_Err.NRMSE}')
 
-            if ns<=10:
+            if ns <= 10:
                 cmax = np.max(np.abs(rec_gold))
                 fig = plt.figure()
-                plt.subplot(1,2,1)
-                plt.imshow(np.rot90(np.abs(rec_gold),2), cmap="gray")
+                plt.subplot(1, 2, 1)
+                plt.imshow(np.rot90(np.abs(rec_gold), 2), cmap="gray")
                 plt.title('rec_gold')
-                plt.clim(0,cmax)
+                plt.clim(0, cmax)
                 plt.colorbar()
 
                 plt.subplot(1, 2, 2)
-                plt.imshow(np.rot90(np.abs(rec_CS),2),cmap="gray")
+                plt.imshow(np.rot90(np.abs(rec_CS), 2), cmap="gray")
                 plt.title('CS - NRMSE={:0.2}'.format(CS_Err.NRMSE))
                 plt.clim(0, cmax)
                 plt.colorbar()
@@ -255,6 +252,6 @@ NRMSE_av = np.mean(CS_NRMSE_arr)
 print(f'done - n_slices={ns}')
 print('saving NRMSE and SSIM arrays')
 filename = logdir + "/CS_res_NRMSE_SSIM"
-np.savez(filename, CS_NRMSE_arr=CS_NRMSE_arr,CS_SSIM_arr=CS_SSIM_arr)
+np.savez(filename, CS_NRMSE_arr=CS_NRMSE_arr, CS_SSIM_arr=CS_SSIM_arr)
 
 print(f'RES: {samp_type} VD pad {pad_ratio} CS_NRMSE_Av={CS_Err.NRMSE :.4f}')
