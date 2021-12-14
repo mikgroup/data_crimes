@@ -1,24 +1,24 @@
-##############################################################################
-# To run this code, use the conda virtual environment "subtle_env"
-# (two identical environments were defined on mikneto or mikshoov)
-###############################################################################
-# documentation:
-# moved the code to PRE_SUBMISSION/Fig5../DL/
-# renaming:
-# NRMSE_av_vs_pad_ratio_and_R --> NRMSE_test_set_av
-# NRMSE_std_vs_pad_ratio_and_R --> NRMSE_test_set_std
-# SSIM_av_vs_pad_ratio_and_R --> SSIM_test_set_av
-# SSIM_std_vs_pad_ratio_and_R --> SSIM_test_set_std
-##########################################################################
+'''
+This code is used for testing the MoDL networks trained on processed versions of the FastMRI multi-coil
+knee data, for generating the results showin in Fig 5 and Fig 8a-b in the paper.
+
+The data processing was described in the code
+crime_1_zero_padding/Fig5_statistics_knee_data/data_prep/data_prep_zero_pad_crime.py
+
+To use this code, you should:
+ 1. train networks or download our pre-trained networks.
+ 2. Edit the input arguments and the basic_data_folder variable. This folder
+should be the same as the output folder defined in the data processing code (see above).
+
+(c) Efrat Shimron & Ke Wang (UT Berkeley) (2021)
+'''
 
 
 import logging
 import os,sys
 # add the project's folder - for access to the functions library:
 sys.path.append("/mikQNAP/efrat/1_inverse_crimes/2_public_repo_mirror_PyCharm/")
-
 #sys.path.append("../")  # add folder above
-
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
@@ -33,20 +33,15 @@ from functions.error_funcs import error_metrics
 N_examples = 122 # number of examples that will be used for computing the mean and STD
 print('N_examples=',N_examples)
 
-#R_vec = np.array([4])
 R = int(4)
-#print('R={}'.format(R))
 
 # create a folder for the test figures
 if not os.path.exists('test_figs_R{}'.format(R)):
     os.makedirs('test_figs_R{}'.format(R))
 
-use_multiple_GPUs_flag = 0
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
-
 
 ##################### create test loader ###########################
 
@@ -54,62 +49,22 @@ class Namespace:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
-# TODO: "params" is defind here but it is also LOADED later in the code - check why we need it both here and there
+
 # Hyper parameters
 params = Namespace()
-#params.data_path = "/mikQNAP/NYU_knee_data/singlecoil_efrat/1_data_w_Ke_preprocessing/test/"  # NO JPEG
-#params.data_path = "/mikQNAP/NYU_knee_data/singlecoil_efrat/1_data_w_Ke_preprocessing_q10/test/"
-#params.data_path = "/mikQNAP/NYU_knee_data/singlecoil_efrat/1_data_w_Ke_preprocessing_q10/train/"
 params.batch_size = 1
-#params.num_grad_steps = 6  # number of unrolls
-#params.num_cg_steps = 8
-#params.share_weights = True
-#params.modl_lamda = 0.05
-#params.lr = 0.0001
-#params.weight_decay = 0
-#params.lr_step_size = 500
-#params.lr_gamma = 0.5
-#params.epoch = 70
-#params.calib = 24  # TODO: calib should depend on pad_ratio
-#params.R = 4
-# params.sampling_flag = 'random_uniform'
-#params.sampling_flag = 'var_dens'
-# params.sampling_flag = 'var_dens_1D'
-print('2D VAR DENS')
 params.sampling_flag = 'var_dens_2D'
-#params.var_dens_flag = args.var_dens_flag
 params.NX_full_FOV = 640
 params.NY_full_FOV = 372
 
-
-######################################################################################################
-#                                     experiment settings
-######################################################################################################
-
-# Remember: the test data must go through the same transforms (e.g. sampling) as the training data
-
-#checkpoint_vec = np.array([0])
-#print('###### CHANGE THIS - checkpoint is {}'.format(checkpoint_vec))
+# experiment settings
 checkpoint_vec = np.array([69])
-
-
-
-
 unrolls = 6
-
-
-
 small_dataset_flag = 0
-
-#pad_ratio_vec = np.array([1,1.25,1.5,1.75,2])  # np.array([1,2])
 pad_ratio_vec = np.array([1,1.25,1.5,1.75,2])
-
-#TODO: change the next vec from var_dens_type_vec to samp_type_vec and change the values to [1,2] for compatibility with the rest of the code
 var_dens_type_vec = np.array([0,1]) # np.array([0,1])    #0 = weak var dens, 1 = strong var dens
 
-
-######################################################################################################
-
+# initialize arrays
 NRMSE_test_set = np.zeros((N_examples,pad_ratio_vec.shape[0],var_dens_type_vec.shape[0]))
 SSIM_test_set  = np.zeros((N_examples,pad_ratio_vec.shape[0],var_dens_type_vec.shape[0]))
 
@@ -120,20 +75,9 @@ SSIM_test_set_std  = np.zeros((pad_ratio_vec.shape[0],var_dens_type_vec.shape[0]
 
 n_test_images = 0
 
-# for r in range(R_vec.shape[0]):
-#     R = R_vec[r]
-#     print('================================================== ')
-#     print('                         R={}                      '.format(R))
-#     print('================================================== ')
-
-
 # Important - here we update R in the params in order to create masks with appropriate sampling
 # The mask is created in the DataTransform (utils/datasets
 params.R = R
-
-# for qi in range(q_vec.shape[0]):
-#     q = q_vec[qi]
-#     print('========= q={} ======== '.format(q))
 
 for v_i in range (var_dens_type_vec.shape[0]):
 
@@ -159,12 +103,6 @@ for v_i in range (var_dens_type_vec.shape[0]):
 
         params.pad_ratio = pad_ratio  # zero-padding ratio
 
-        if pad_ratio >= 3:
-            use_multiple_GPUs_flag = 1
-        else:
-            use_multiple_GPUs_flag = 0
-
-        # use_multiple_GPUs_flag = 0
 
         # NOTICE: set the following path to your own path. It should be the same path as the one defined in the
         # script crime_1_../Fig5.../data_prep/data_prep_zero_pad_crime.py
@@ -214,13 +152,6 @@ for v_i in range (var_dens_type_vec.shape[0]):
             print('params.data_path: ', params.data_path)
             print('params.batch_size: ', params.batch_size)
 
-            # Data Parallelism - enables running on multiple GPUs
-            if (torch.cuda.device_count() > 1) & (use_multiple_GPUs_flag == 1):
-                print("Now using ", torch.cuda.device_count(), "GPUs!")
-                single_MoDL = nn.DataParallel(single_MoDL, device_ids=[0,1,2, 3])  # the first index on the device_ids determines which GPU will be used as a staging area before scattering to the other GPUs
-            else:
-                print("Now using a single GPU")
-
             single_MoDL.load_state_dict(checkpoint['model'])
 
             single_MoDL.eval()
@@ -235,10 +166,8 @@ for v_i in range (var_dens_type_vec.shape[0]):
 
                     input_batch, target_batch, mask_batch = data
 
-
                     in_size =  input_batch.size()
                     print('in_size=',in_size)
-
 
                     if (pad_i==0) & (v_i==0):
                         n_test_images += 1
@@ -256,15 +185,10 @@ for v_i in range (var_dens_type_vec.shape[0]):
                         # plt.show()
                         # fig.savefig('mask_i_batch{}.png'.format(i_batch))
 
-                    # move data to GPU
-                    if (torch.cuda.device_count() > 1) & (use_multiple_GPUs_flag == 1):
-                        input_batch = input_batch.to(f'cuda:{single_MoDL.device_ids[0]}')
-                        target_batch = target_batch.to(f'cuda:{single_MoDL.device_ids[0]}')
-                        mask_batch = mask_batch.to(f'cuda:{single_MoDL.device_ids[0]}')
-                    else:
-                        input_batch = input_batch.to(device)
-                        target_batch = target_batch.to(device)
-                        mask_batch = mask_batch.to(device)
+
+                    input_batch = input_batch.to(device)
+                    target_batch = target_batch.to(device)
+                    mask_batch = mask_batch.to(device)
 
                     # forward pass - for the full batch
                     out_batch = single_MoDL(input_batch.float(), mask=mask_batch)
@@ -354,10 +278,8 @@ for v_i in range (var_dens_type_vec.shape[0]):
 
 
 #################### prep for plots #################33
-
-# NOTICE: the following code creates and saves the figures, but for some reason the axis labels aren't
-# displayed properly.
-# for better figures run the script fig4ISMRM_Test_MoDL_run5 after running this script
+# NOTICE: the following code creates and saves the figures, but to generate
+# better figures run the script Fig5_stats.py located in the folder Fig5_statistics_knee_data
 
 # prepare x ticks labels for the NRMSE and SSIM graphs
 x = pad_ratio_vec
@@ -380,13 +302,9 @@ for v_i in range(var_dens_type_vec.shape[0]):
         var_dens_flag = 'strong'
 
     label_str = var_dens_flag + " var-dens"
-
-
     plt.errorbar(pad_ratio_vec,NRMSE_test_set_av[:,v_i].squeeze(),yerr=NRMSE_test_set_std[:,v_i].squeeze(),linestyle='solid', label=label_str,
                      marker=markers[v_i])
 
-
-#plt.ylim((0,0.075))
 plt.ylim(0.0035, 0.027)
 plt.xlabel('Zero padding ratio', fontsize=18)
 plt.ylabel('NRMSE', fontsize=20)
