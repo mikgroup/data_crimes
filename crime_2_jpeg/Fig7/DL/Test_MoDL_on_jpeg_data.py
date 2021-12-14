@@ -1,28 +1,25 @@
-##############################################################################
-# To run this code, use the conda virtual environment "subtle_env"
-# (two identical environments were defined on mikneto or mikshoov)
-###############################################################################
-# TODO: remove the option for small dataset
+'''
+This code is used for testing MoDL on JPEG-compressed data, for the results shown in figures 6, 7 and 8c in the paper.
+
+Before running this script you should update the following:
+basic_data_folder - it should be the same as the output folder defined in the script /crime_2_jpeg/data_prep/jpeg_data_prep.py
+
+(c) Efrat Shimron, UC Berkeley, 2021
+'''
+
 
 import os
 import logging
 
 import matplotlib.pyplot as plt
 import numpy as np
-import sigpy as sp
 import torch
 import torch.nn as nn
 from MoDL_single import UnrolledModel
-#from subsample_fastmri import MaskFunc
-#from subsample_var_dens import MaskFuncVarDens_1D
-#from torch.utils.data import DataLoader
 from utils.datasets import create_data_loaders
 
 # import custom libraries
 from utils import complex_utils as cplx
-# import custom classes
-from utils.datasets import SliceData
-
 from functions.error_funcs import error_metrics
 
 use_multiple_GPUs_flag = 0
@@ -30,8 +27,6 @@ use_multiple_GPUs_flag = 0
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-# %load_ext autoreload
-# %autoreload 2
 
 # create a folder for the test figures
 figs_foldername = 'test_figs'
@@ -44,10 +39,8 @@ class Namespace:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
-# TODO: "params" is defind here but it is also LOADED later in the code - check why we need it both here and there
 # Hyper parameters
 params = Namespace()
-#params.data_path = "/mikQNAP/NYU_knee_data/singlecoil_efrat/1_data_w_Ke_preprocessing/test/"  # NO JPEG
 params.batch_size = 1
 
 # image dimensions
@@ -60,24 +53,15 @@ calib_y = int(12 * params.NY / params.NX)
 params.calib = np.array([calib_x, calib_y])
 params.shuffle_flag = False # should be True for training, False for testing. Notice that this is not a string, semicolons aren't necessary.
 
-# params.sampling_flag = 'random_uniform'
-# params.sampling_flag = 'var_dens_1D'
-print('2D VAR DENS')
+
 params.sampling_flag = 'var_dens_2D'
 params.var_dens_flag = 'weak'  # 'weak' / 'strong'
 
-checkpoint_num = int(69)
+checkpoint_num = int(69)  # load saved model (trained network)
 
-#q_vec = np.array([10,20,50,100])
-q_vec = np.array([10,20,50,75,100])
 q_vec = np.array([20,50,75,999])
-#q_vec = np.array([10,20,50,75,100])
-#q_vec = np.array([100])
 
-#R_vec = np.array([4])
 R_vec = np.array([2,3,4])
-
-print('R_vec=',R_vec)
 
 N_examples_4display=20 # number of examples to display & save recs
 
@@ -95,8 +79,6 @@ N_calc_err = 200
 
 NRMSE_examples_4display = np.zeros((R_vec.shape[0],q_vec.shape[0],N_calc_err))
 SSIM_examples_4display = np.zeros((R_vec.shape[0],q_vec.shape[0],N_calc_err))
-
-small_dataset_flag = 0
 
 for r in range(R_vec.shape[0]):
     R = R_vec[r]
@@ -119,40 +101,24 @@ for r in range(R_vec.shape[0]):
         else:
             use_multiple_GPUs_flag = 0
 
-        basic_data_folder = "/mikQNAP/NYU_knee_data/multicoil_efrat/5_JPEG_compressed_data"
+        basic_data_folder = "/mikQNAP/NYU_knee_data/multicoil_efrat/5_JPEG_compressed_data/"
 
-        if small_dataset_flag == 1:
-            print('using SMALL DATASET')
-            basic_data_folder = basic_data_folder + '_small/'
-            run_foldername = 'R{}_q{}_small_dataset'.format(params.R, params.q)
-        else:
-            basic_data_folder = basic_data_folder + '/'
-            run_foldername = 'R{}_q{}'.format(params.R, params.q)
+        run_foldername = 'R{}_q{}'.format(params.R, params.q)
 
         data_type = 'test'
         im_type_str = 'full_im'  # training & validation is done on blocks (to accelerate training). Test is done on full-size images.
 
         params.data_path = basic_data_folder + data_type + "/q" + str(params.q) + "/" + im_type_str + "/"
-
-        print(f'CHECK THIS: params.data_path= {params.data_path}')
         test_loader = create_data_loaders(params)  # params.R is important here! it defines the sampling mask
 
         N_test_batches = len(test_loader.dataset)
-        print('N_test_batches =', N_test_batches)
 
-
-        if small_dataset_flag == 1:
-            checkpoint_file = 'R{}_q{}_small_dataset/checkpoints/model_{}.pt'.format(R,q,checkpoint_num)
-        elif small_dataset_flag == 0:
-            checkpoint_file = 'R{}_q{}/checkpoints/model_{}.pt'.format(R, q, checkpoint_num)
-
+        # load trained network
+        checkpoint_file = 'R{}_q{}/checkpoints/model_{}.pt'.format(R, q, checkpoint_num)
         checkpoint = torch.load(checkpoint_file,map_location=device)
 
         params_loaded = checkpoint["params"]
         single_MoDL = UnrolledModel(params_loaded).to(device)
-
-        print('params.data_path: ', params.data_path)
-        print('params.batch_size: ', params.batch_size)
 
         # Data Parallelism - enables running on multiple GPUs
         if (torch.cuda.device_count() > 1) & (use_multiple_GPUs_flag == 1):
@@ -177,10 +143,6 @@ for r in range(R_vec.shape[0]):
 
                 #input_batch, target_batch, mask_batch, target_no_JPEG_batch = data
                 input_batch, target_batch, mask_batch = data
-
-                #print('input_batch ',input_batch.shape)
-                #print('target_batch ', target_batch.shape)
-
 
                 # # display the mask (before converting it to torch tensor)
                 if (iter == 0):

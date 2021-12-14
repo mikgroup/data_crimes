@@ -6,34 +6,21 @@ basic_data_folder - it should be the same as the output folder defined in the sc
 
 (c) Efrat Shimron, UC Berkeley, 2021
 '''
+
 import os
 import logging
-
 import matplotlib.pyplot as plt
 import numpy as np
-import sigpy as sp
 import torch
-import torch.nn as nn
 from MoDL_single import UnrolledModel
-#from subsample_fastmri import MaskFunc
-#from subsample_var_dens import MaskFuncVarDens_1D
-#from torch.utils.data import DataLoader
 from utils.datasets import create_data_loaders
-
 # import custom libraries
 from utils import complex_utils as cplx
-# import custom classes
-from utils.datasets import SliceData
-
 from functions.error_funcs import error_metrics
-
-use_multiple_GPUs_flag = 0
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-# %load_ext autoreload
-# %autoreload 2
 
 # create a folder for the test figures
 if not os.path.exists('test_figs'):
@@ -62,7 +49,7 @@ params.shuffle_flag = False # should be True for training, False for testing. No
 
 params.sampling_flag = 'var_dens_2D'
 params.var_dens_flag = 'strong'  # 'weak' / 'strong'
-checkpoint_num = int(69)  # for loading a trained network
+checkpoint_num = int(69)   # load saved model (trained network)
 
 q_vec = np.array([20,50,75,999])
 R_vec = np.array([4])
@@ -143,14 +130,9 @@ for r in range(R_vec.shape[0]):
                     # fig.savefig('mask_iter{}.png'.format(iter))
 
                 # move data to GPU
-                if (torch.cuda.device_count() > 1) & (use_multiple_GPUs_flag == 1):
-                    input_batch = input_batch.to(f'cuda:{single_MoDL.device_ids[0]}')
-                    target_batch = target_batch.to(f'cuda:{single_MoDL.device_ids[0]}')
-                    mask_batch = mask_batch.to(f'cuda:{single_MoDL.device_ids[0]}')
-                else:
-                    input_batch = input_batch.to(device)
-                    target_batch = target_batch.to(device)
-                    mask_batch = mask_batch.to(device)
+                input_batch = input_batch.to(device)
+                target_batch = target_batch.to(device)
+                mask_batch = mask_batch.to(device)
 
                 # forward pass - for the full batch
                 out_batch = single_MoDL(input_batch.float(), mask=mask_batch)
