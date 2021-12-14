@@ -1,9 +1,11 @@
-##############################################################################
-# To run this code, use the conda virtual environment "subtle_env"
-# (two identical environments were defined on mikneto or mikshoov)
-###############################################################################
-# TODO: remove the option for small dataset
+'''
+This code is used for testing MoDL on JPEG-compressed data, for the results shown in figures 6, 7 and 8c in the paper.
 
+Before running this script you should update the following:
+basic_data_folder - it should be the same as the output folder defined in the script /crime_2_jpeg/data_prep/jpeg_data_prep.py
+
+(c) Efrat Shimron, UC Berkeley, 2021
+'''
 import os
 import logging
 
@@ -43,10 +45,8 @@ class Namespace:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
 
-# TODO: "params" is defind here but it is also LOADED later in the code - check why we need it both here and there
 # Hyper parameters
 params = Namespace()
-#params.data_path = "/mikQNAP/NYU_knee_data/singlecoil_efrat/1_data_w_Ke_preprocessing/test/"  # NO JPEG
 params.batch_size = 1
 
 # image dimensions
@@ -57,28 +57,18 @@ params.NY = 372
 calib_x = int(12)
 calib_y = int(12 * params.NY / params.NX)
 params.calib = np.array([calib_x, calib_y])
+
 params.shuffle_flag = False # should be True for training, False for testing. Notice that this is not a string, semicolons aren't necessary.
 
-# params.sampling_flag = 'random_uniform'
-# params.sampling_flag = 'var_dens_1D'
-print('2D VAR DENS')
 params.sampling_flag = 'var_dens_2D'
 params.var_dens_flag = 'strong'  # 'weak' / 'strong'
+checkpoint_num = int(69)  # for loading a trained network
 
-checkpoint_num = int(69)
-
-#q_vec = np.array([10,20,50,75,100])
 q_vec = np.array([20,50,75,999])
-
 R_vec = np.array([4])
 
-
-print('R_vec=',R_vec)
-
 N_examples_4display=15 # number of examples to display
-
 N_examples_stats = 15 # number of examples over which the mean and STD will be computed
-
 
 NRMSE_av_vs_q_and_R = np.zeros((R_vec.shape[0],q_vec.shape[0]))
 NRMSE_std_vs_q_and_R = np.zeros((R_vec.shape[0],q_vec.shape[0]))
@@ -98,7 +88,6 @@ for r in range(R_vec.shape[0]):
     print('                         R={}                      '.format(R))
     print('================================================== ')
 
-
     # Important - here we update R in the params in order to create masks with appropriate sampling
     # The mask is created in the DataTransform (utils/datasets
     params.R = R
@@ -106,56 +95,26 @@ for r in range(R_vec.shape[0]):
     for qi in range(q_vec.shape[0]):
         q = q_vec[qi]
         params.q = q
-        print('========= q={} ======== '.format(q))
 
-        if q == 100:
-            use_multiple_GPUs_flag = 0 # can be 1 if there are multiple GPUs available
-        else:
-            use_multiple_GPUs_flag = 0
-
-        basidc_data_folder = "/mikQNAP/NYU_knee_data/multicoil_efrat/5_JPEG_compressed_data"
-
-        if small_dataset_flag == 1:
-            print('using SMALL DATASET')
-            basidc_data_folder = basidc_data_folder + '_small/'
-            run_foldername = 'R{}_q{}_small_dataset'.format(params.R, params.q)
-        else:
-            basidc_data_folder = basidc_data_folder + '/'
-            run_foldername = 'R{}_q{}'.format(params.R, params.q)
+        basic_data_folder = "/mikQNAP/NYU_knee_data/multicoil_efrat/5_JPEG_compressed_data/"
 
         data_type = 'test'
         im_type_str = 'full_im'  # training & validation is done on blocks (to accelerate training). Test is done on full-size images.
 
+        params.data_path = basic_data_folder + data_type + "/q" + str(params.q) + "/" + im_type_str + "/"
 
-        params.data_path = basidc_data_folder + data_type + "/q" + str(params.q) + "/" + im_type_str + "/"
-
-        #print(f'CHECK THIS: params.data_path= {params.data_path}')
-        test_loader = create_data_loaders(params)  # params.R is important here! it defines the sampling mask
+        test_loader = create_data_loaders(params)
 
         N_test_batches = len(test_loader.dataset)
         print('N_test_batches =', N_test_batches)
 
-
-        if small_dataset_flag == 1:
-            checkpoint_file = 'R{}_q{}_small_dataset/checkpoints/model_{}.pt'.format(R,q,checkpoint_num)
-        elif small_dataset_flag == 0:
-            checkpoint_file = 'R{}_q{}/checkpoints/model_{}.pt'.format(R, q, checkpoint_num)
+        checkpoint_file = 'R{}_q{}/checkpoints/model_{}.pt'.format(R, q, checkpoint_num)
 
         checkpoint = torch.load(checkpoint_file,map_location=device)
 
+        # load the parameters of the trained network
         params_loaded = checkpoint["params"]
         single_MoDL = UnrolledModel(params_loaded).to(device)
-
-        print('params.data_path: ', params.data_path)
-        print('params.batch_size: ', params.batch_size)
-
-        # Data Parallelism - enables running on multiple GPUs
-        if (torch.cuda.device_count() > 1) & (use_multiple_GPUs_flag == 1):
-            print("Now using ", torch.cuda.device_count(), "GPUs!")
-            single_MoDL = nn.DataParallel(single_MoDL, device_ids=[0,1,2,3])  # the first index on the device_ids determines which GPU will be used as a staging area before scattering to the other GPUs
-        else:
-            print("Now using a single GPU")
-
 
         single_MoDL.load_state_dict(checkpoint['model'])
 
@@ -173,11 +132,7 @@ for r in range(R_vec.shape[0]):
                 #input_batch, target_batch, mask_batch, target_no_JPEG_batch = data
                 input_batch, target_batch, mask_batch = data
 
-                #print('input_batch ',input_batch.shape)
-                #print('target_batch ', target_batch.shape)
-
-
-                # # display the mask (before converting it to torch tensor)
+                # display the mask (before converting it to torch tensor)
                 if (iter == 0):
                     # print('mask_batch shape:',mask_batch.shape)
                     mask_squeezed = mask_batch[0, :, :, 0].squeeze()
@@ -207,21 +162,10 @@ for r in range(R_vec.shape[0]):
                     im_input = cplx.to_numpy(input_batch.cpu())[i, :, :]
                     im_target = cplx.to_numpy(target_batch.cpu())[i, :, :]
                     im_out = cplx.to_numpy(out_batch.cpu())[i, :, :]
-                    #print('im_input.shape',im_input.shape)
-                    #print('im_target.shape', im_target.shape)
-
-                    # # normalize the target image (no need to normalize the output of the network)
-                    # scale = calc_scaling_factor(kspace)
-                    #
-                    # kspace = kspace / scale
-                    # im_target = im_target / scale
-                    # #target_no_JPEG = target_no_JPEG / scale
-
 
                     MoDL_err = error_metrics(np.abs(im_target),np.abs(im_out))
                     MoDL_err.calc_NRMSE()
                     MoDL_err.calc_SSIM()
-                    #print('NRMSE={:0.3f}'.format(MoDL_err.NRMSE))
 
                     NRMSE_test_list.append(MoDL_err.NRMSE)
                     SSIM_test_list.append(MoDL_err.SSIM)
@@ -254,44 +198,6 @@ for r in range(R_vec.shape[0]):
                         plt.show()
                         figname = 'check3_target_R{}_q{}_iter{}'.format(R,q,iter)
                         fig.savefig(figname)
-                        #print('............saved fig iter 0.............')
-
-                        # fig = plt.figure()
-                        # plt.subplot(1,2,1)
-                        # plt.imshow(target_im_rotated,cmap="gray")
-                        # plt.colorbar(shrink=0.5)
-                        # plt.axis('off')
-                        # plt.title('target')
-                        #
-                        # plt.subplot(1,2,2)
-                        # plt.imshow(im_out_rotated,cmap="gray")
-                        # plt.colorbar(shrink=0.5)
-                        # plt.title('MoDL rec (test session) NRMSE={:.3f}'.format(MoDL_err.NRMSE))
-                        # plt.axis('off')
-                        # plt.suptitle('Results R{} q{} MoDL{} - example {}'.format(R,q,checkpoint_num,i))
-                        # plt.show()
-                        #
-                        # plt.suptitle('Test images: q {} R {} MoDL checkpoint {}'.format(q,R,checkpoint_num))
-                        # fig.savefig('test_figs/test_images_R{}_q{}_MoDL{}_example{}'.format(R,q,checkpoint_num,i))
-
-                        # # display concatenated figure
-                        #a = np.concatenate((im_target, im_out), axis=1)
-                        #s1 = im_target.shape[1]
-                        # fig = plt.figure()
-                        # plt.imshow(np.abs(a), cmap="gray", origin='lower')
-                        # plt.title(
-                        #     'Run10 ' + params.sampling_flag + ': target ; MoDL single coil rec, checkpoint #{}'.format(
-                        #         checkpoint_num))
-                        # plt.text(  # position text relative to Axes
-                        #     1.1 * s1, 0.05 * s1, 'NRMSE {:.3f}'.format(MoDL_err.NRMSE),
-                        #     ha='left', va='center',
-                        #     color="yellow", fontsize=12)
-                        # plt.colorbar()
-                        # plt.show()
-                        # fname = 'fig_checkpoint_{}.png'.format(checkpoint_num)
-                        # fig.savefig(fname)
-
-                        print('debug')
 
                 if iter >= N_examples_stats:
                     break

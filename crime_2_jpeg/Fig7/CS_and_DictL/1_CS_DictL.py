@@ -53,8 +53,6 @@ class Namespace:
 
 def get_args():
     parser = OptionParser()
-    # parser.add_option('--num_slices', '--num_slices', type='int', default=5, help='number of slices')
-    # parser.add_option('--num_realizations', '--num_realizations', type='int', default=1, help='number of sampling mask realizations')
     parser.add_option('--simulation_flag', '--sim_flag', type='int', default=0,
                       help='0 statistics; 1=pathology #1; 2=pathology 2')
     parser.add_option('--R', '--R', type='int', default=[3], help='desired R')
@@ -85,7 +83,6 @@ if __name__ == '__main__':
 
     q_vec = np.asfarray(args.q_vec).astype('int')
 
-
     # input variables for Dictionary Learning
     num_nonzero_coeffs = args.nnz
     max_iter = args.max_iter
@@ -98,7 +95,6 @@ if __name__ == '__main__':
     # hard-coded options for Dictionary Learning
     device = sp.cpu_device  # which device to use (not all is supported on GPU)
     mode = 'omp'
-
 
     var_dens_flag = 'weak' # can be 'strong' / 'weak'
 
@@ -188,9 +184,6 @@ if __name__ == '__main__':
 
         n = n_init # counts number of loaded scan. Each scan contains ~20 slices
         ns = 0  # counts loaded examples (slices, not scans!)
-
-
-
 
         while ns < N_examples:
                 kspace_loaded_flag = 0
@@ -405,10 +398,6 @@ print(x_ticks_labels)
 
 # ------------ NRMSE graph - CS results -------------
 fig = plt.figure()
-# for r in range(R_vec.shape[0]):
-# R = R_vec[r]
-
-#NRMSE_tmp = CS_NRMSE_vs_quality[:, r, :].squeeze()
 
 if N_examples > 1:
     NRMSE_av_per_quality_val = CS_NRMSE_vs_quality.mean(axis=1)
@@ -427,8 +416,6 @@ plt.ylabel('NRMSE', fontsize=20)
 y_ticks_vec = np.array([0, 0.02, 0.04])
 ax.set_yticks(y_ticks_vec)
 ax.set_yticklabels(['0', '0.02', '0.04'], fontsize=14)
-# xticks = ax.get_xticklabels()
-# ax.set_xticklabels(xticks,fontsize=14)
 ax.tick_params(axis='both', which='major', labelsize=14)
 ax = plt.gca()
 ax.legend(fontsize=14, loc="upper right")
@@ -440,10 +427,6 @@ fig.savefig(fname=fname)
 # ------------ NRMSE graph - DictL results -------------
 if DictL_flag == 1:
     fig = plt.figure()
-    # for r in range(R_vec.shape[0]):
-    #     R = R_vec[r]
-
-    #NRMSE_tmp = DictL_NRMSE_vs_quality[:, r, :].squeeze()
 
     if N_examples > 1:
         NRMSE_av_per_quality_val = DictL_NRMSE_vs_quality.mean(axis=1)

@@ -1,44 +1,21 @@
-##############################################################################
-# To run this code, use the conda virtual environment "subtle_env"
-# (two identical environments were defined on mikneto or mikshoov)
+'''
+This code is used for training MoDL on JPEG-compressed data, for the results shown in figures 6, 7 and 8c in the paper.
 
-# Example - how to run this script from linux command line:
-# python3 Train_xxxxxx.py  --R 4 --q 75 --gpu 0
-###############################################################################
-# version 34:
-# calib is now defined as in the zero-padding experiments
-# in utils/datasets.py the sampling code is now imported (as in the zero-padding experiments).
+Before running this script you should update the following:
+basic_data_folder - it should be the same as the output folder defined in the script /crime_2_jpeg/data_prep/jpeg_data_prep.py
+
+(c) Efrat Shimron, UC Berkeley, 2021
+'''
 
 
-# Training data:
-# the data in the folder train/
-# was taken from
-# /mikQNAP/NYU_knee_data/singlecoil_train/
-
-
-# %matplotlib notebook
 import os, sys
-import sys
-# import os.path
-#
-# # add folder above
-# sys.path.append(
-#     os.path.abspath(os.path.join(os.path.dirname(__file__), os.path.pardir)))
-
-
 import logging
 import numpy as np
 import torch
-import sigpy as sp
 import torch.nn as nn
-from torch.utils.data import DataLoader
-import matplotlib
-
-matplotlib.use('Agg')
-
 import matplotlib.pyplot as plt
 from utils import complex_utils as cplx
-from utils.datasets import create_data_loaders #, calc_scaling_factor
+from utils.datasets import create_data_loaders
 from MoDL_single import UnrolledModel
 import argparse
 
@@ -58,13 +35,6 @@ def create_arg_parser():
 if __name__ == '__main__':
 
     args = create_arg_parser().parse_args()
-
-    # if args.q == 100:
-    #     use_multiple_GPUs_flag = 1
-    # else:
-    #     use_multiple_GPUs_flag = 0
-    use_multiple_GPUs_flag = 0
-
 
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)
@@ -111,30 +81,7 @@ if __name__ == '__main__':
     print('2D VAR DENS')
     params.sampling_flag = 'var_dens_2D'
     params.var_dens_flag = 'weak' # 'weak' / 'strong'
-
-    #TODO: remove the blocks option
-    #im_type_str = 'blocks'  # training & validation is done on blocks (to accelerate training). Test is done on full-size images.
     im_type_str = 'full_im'
-
-    print('-----------------------------------------------------')
-    print(f'                train on {im_type_str}              ')
-    print(f'                {params.var_dens_flag} VD           ')
-    print('-----------------------------------------------------')
-
-    small_dataset_flag = 0
-
-    # if small_dataset_flag==0:
-    #     params.data_path = '/mikQNAP/NYU_knee_data/singlecoil_efrat/2_JPEG_compressed_data_q{}_scaled_large/train/'.format(params.q)  # a folder with 300 examples
-    #     run_foldername = 'R{}_q{}'.format(params.R, params.q)
-    #
-    # elif small_dataset_flag==1:
-    #     # SMALL DATA - for debugging
-    #     print('using SMALL DATASET')
-    #     params.data_path = '/mikQNAP/NYU_knee_data/singlecoil_efrat/2_JPEG_compressed_data_q{}_scaled_small_dataset/train/'.format(params.q)  # a folder with 300 examples
-    #     run_foldername = 'R{}_q{}_small_dataset'.format(params.R, params.q)
-    #
-    # ---------------------
-    basic_data_folder = "/mikQNAP/NYU_knee_data/multicoil_efrat/5_JPEG_compressed_data"
 
     # where to save the output files:
     basic_out_folder = "/mikQNAP/NYU_knee_data/multicoil_efrat/5_JPEG_compressed_data"
@@ -159,14 +106,6 @@ if __name__ == '__main__':
 
     # Create an unrolled model
     single_MoDL = UnrolledModel(params).to(device)
-
-
-    # # Data Parallelism - enables running on multiple GPUs
-    # if (torch.cuda.device_count()>1) & (use_multiple_GPUs_flag==1):
-    #     print("Now using ", torch.cuda.device_count(), "GPUs!")
-    #     single_MoDL = nn.DataParallel(single_MoDL, device_ids = [0,1,2,3]) # the first index on the device_ids determines which GPU will be used as a staging area before scattering to the other GPUs
-    # else:
-    #     print("Now using a single GPU")
 
     single_MoDL.display_zf_image_flag = 1  # display & save the zero-filled recon (initial guess) only in the first iter
 
@@ -211,14 +150,9 @@ if __name__ == '__main__':
             # mask = mask.to(device)
 
             # move data to GPU
-            if (torch.cuda.device_count()>1) & (use_multiple_GPUs_flag==1):
-                input = input.to(f'cuda:{single_MoDL.device_ids[0]}')
-                target = target.to(f'cuda:{single_MoDL.device_ids[0]}')
-                mask = mask.to(f'cuda:{single_MoDL.device_ids[0]}')
-            else:
-                input = input.to(device)
-                target = target.to(device)
-                mask = mask.to(device)
+            input = input.to(device)
+            target = target.to(device)
+            mask = mask.to(device)
 
             # forward pass
             im_out = single_MoDL(input.float(), mask=mask)
@@ -229,8 +163,7 @@ if __name__ == '__main__':
             loss = loss / num_accumulated_iters  # because the loss is accumulated for num_accumulated_iters, we divide the loss by the number of iters to average the accumulated loss gradients.
 
             # backward pass & update network parameters
-            # optimizer.zero_grad()  # this part was moved above for gradient accumulation
-            loss.backward()  # backward pass. note that gradients are accumulated as long as we don't do optimizer.zero_grad()
+            loss.backward()  # backward pass. note that gradients are accumulated, so optimizer.zero_grad() appears somewhere else.
 
             if (iter + 1) % num_accumulated_iters == 0:
                 # Do a SGD step once every num_accumulated_iters
@@ -318,12 +251,6 @@ if __name__ == '__main__':
             print("Saved successfully!")
 
         saveList(loss_all,run_foldername + '/loss_all.npy')
-
-        # # how to load the list loss_all into a numpy array:
-        # def loadList(filename):
-        #     # the filename should mention the extension 'npy'
-        #     tempNumpyArray=np.load(filename)
-        #     return tempNumpyArray.tolist()
 
 
 
