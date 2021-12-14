@@ -16,8 +16,9 @@ FatSat_processed_data_folder  # desired output folder
 '''
 
 
-# add folder above (while running on mikQNAP):
-#sys.path.append("/mikQNAP/efrat/1_inverse_crimes/1_mirror_PyCharm_CS_MoDL_merged/SubtleCrimesRepo/")
+import sys
+# add the project's folder - for access to the functions library:
+sys.path.append("/mikQNAP/efrat/1_inverse_crimes/2_public_repo_mirror_PyCharm/")
 
 import numpy as np
 import os
@@ -37,7 +38,8 @@ FastMRI_train_folder = "/mikQNAP/NYU_knee_data/multicoil_train/"
 FastMRI_val_folder = "/mikQNAP/NYU_knee_data/multicoil_val/"
 
 # Set the next path to YOUR desired output path.
-FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v19_FatSatPD/"
+FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/zpad_FatSat_data/"
+
 
 ######################################################################################################################
 #                                                   Prep data
@@ -165,10 +167,6 @@ for data_i in range(5):  # 0 = train, 1 = val, 2 = test, 3 = pathology case I, 4
             # print some info about the scan
             if (scan_label != 'CORPDFS_FBK'):
                 print('scan label is not FatSatPD')
-
-            #if (kspace_orig.shape[2] != 640) | (kspace_orig.shape[3] != 372):
-            #    print('scan is not 640x372 pixels')
-
 
             #if (kspace_orig.shape[2] == 640) & (kspace_orig.shape[3] == 372) & (scan_label == 'CORPDFS_FBK'):
             if (scan_label == 'CORPDFS_FBK'):

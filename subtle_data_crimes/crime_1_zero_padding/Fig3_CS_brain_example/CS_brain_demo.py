@@ -1,5 +1,11 @@
-# This script creates the example shown in Figure 3 in the Subtle Data Crimes paper.
-# (c) Efrat Shimron, UC Berkeley, 2021.
+'''
+This script creates the example shown in Figure 3 in the Subtle Data Crimes paper.
+(c) Efrat Shimron, UC Berkeley, 2021.
+'''
+
+import sys
+# add the project's folder - for access to the functions library:
+sys.path.append("/mikQNAP/efrat/1_inverse_crimes/2_public_repo_mirror_PyCharm/")
 
 
 import numpy as np
@@ -12,6 +18,7 @@ from sigpy import mri as mr
 from subtle_data_crimes.functions import error_metrics
 from subtle_data_crimes.functions import gen_2D_var_dens_mask
 from subtle_data_crimes.functions.utils import zpad_merge_scale
+
 
 ###################################### settings ######################################3
 

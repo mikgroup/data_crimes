@@ -1,6 +1,8 @@
-# This code demonstrates subtle crime I with Compressed sensing.
-# It reproduces the results in Figure 2a of the Subtle Data Crime paper.
-# (c) Efrat Shimron, UC Berkeley, 2021.
+'''
+This code demonstrates subtle crime I with Compressed sensing.
+It reproduces the results in Figure 2a of the Subtle Data Crime paper.
+(c) Efrat Shimron, UC Berkeley, 2021.
+'''
 
 ##########################################################################################
 
