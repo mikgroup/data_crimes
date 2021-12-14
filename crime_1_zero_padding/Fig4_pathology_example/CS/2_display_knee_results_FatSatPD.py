@@ -1,8 +1,6 @@
 
 
-import os
 import numpy as np
-import h5py
 import sys
 import matplotlib.pyplot as plt
 
@@ -13,23 +11,11 @@ sys.path.append("/mikQNAP/efrat/1_inverse_crimes/1_mirror_PyCharm_CS_MoDL_merged
 sys.path.append("/home/efrat/anaconda3/")
 sys.path.append("/home/efrat/anaconda3/lib/python3.7/site-packages/")  # path to sigpy
 
-
-# strong VD only, lamda range wasn't large enough
-#R = 4
-#num_slices = 20 #
-#data_filename = 'knee_lamda_calib_R{}_num_slices{}.npz'.format(R,num_slices)
-
-
 # strong VD & weak VD, lamda range larger
 R = 4
 num_slices = 10 #
 Nsamp = 2
 data_filename = 'knee_lamda_calib_R{}_num_slices{}_Nsamp{}_FatSat.npz'.format(R,num_slices,Nsamp)
-
-
-#data_filename = 'knee_lamda_calib_R{}.npz'.format(R)
-
-
 
 # ---------------------- load results --------------------
 
@@ -44,8 +30,6 @@ pad_ratio_vec        = container['pad_ratio_vec']
 sampling_type_vec    = container['sampling_type_vec']
 lamda_vec            = container['lamda_vec']
 num_slices           = container['num_slices']
-
-#num_slices = 1 # TODO: load from container
 
 NRMSE_arr_av = np.mean(NRMSE_arr,axis=0)
 
@@ -87,8 +71,6 @@ for j in range(sampling_type_vec.shape[0]):
     #ax.set_xscale('log')
     ax.legend(fontsize=18,loc='upper center')
     plt.show()
-
-
 
 
 # --------------------- display NRMSE vs. lamda vec - lamda in LOG scale----------------------
@@ -156,7 +138,7 @@ for j in range(sampling_type_vec.shape[0]):
     elif sampling_type_vec[j] == 2:
         samp_label = 'VD strong'
 
-    # TODO: add dim for R here
+
     CS_NRMSE_fixed_lamda = np.zeros((pad_ratio_vec.shape[0], sampling_type_vec.shape[0]))
     CS_NRMSE_optimal_lamda = np.zeros((pad_ratio_vec.shape[0],sampling_type_vec.shape[0]))
     optimal_lamda_vs_pad_ratio = np.zeros(pad_ratio_vec.shape[0])
@@ -168,23 +150,11 @@ for j in range(sampling_type_vec.shape[0]):
         NRMSE_min = np.min(CS_NRMSE_vs_lamda_vec)
         lam_i_min = np.argmin(CS_NRMSE_vs_lamda_vec)
 
-        # TODO: add dim for R here
         CS_NRMSE_optimal_lamda[pad_i,j] = NRMSE_min
 
         # for comparison - save result for the "fixed" lamda
         NRMSE_lam_fixed = NRMSE_arr_av[pad_i,r, j, lam_fixed_i].squeeze()
         CS_NRMSE_fixed_lamda[pad_i,j]  = NRMSE_lam_fixed
-
-# display results vs. lambda
-
-# for j in range(sampling_type_vec.shape[0]):
-#
-#     if sampling_type_vec[j] == 0:
-#         samp_label = 'unif-random'
-#     elif sampling_type_vec[j] == 1:
-#         samp_label = 'VD weak'
-#     elif sampling_type_vec[j] == 2:
-#         samp_label = 'VD strong'
 
     fig = plt.figure()
 

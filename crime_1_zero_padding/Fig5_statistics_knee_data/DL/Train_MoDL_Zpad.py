@@ -1,11 +1,15 @@
 '''
 This code is used for training the MoDL algorithm on processed versions of the FastMRI multi-coil
-knee data. Notice that after the processing the data becomes magnitude (real-valued), zero-padded
+knee data, for generating the results showin in Fig 5 and Fig 8a-b in the paper.
+
+The data processing was described in the code
+crime_1_zero_padding/Fig5_statistics_knee_data/data_prep/data_prep_zero_pad_crime.py
+
+Notice that after the processing the data becomes magnitude (real-valued), zero-padded
 & single-coil.
 
 To use this code, edit the input arguments and the basic_data_folder variable. This folder
-should be the same as the output folder defined in the script
-crime_1_zero_padding/Fig5_statistics_knee_data/data_prep/data_prep_zero_pad_crime.py
+should be the same as the output folder defined in the data processing code (see above).
 
 (c) Efrat Shimron & Ke Wang (UT Berkeley) (2021)
 '''
@@ -100,7 +104,7 @@ if __name__ == '__main__':
 
     # Notice: The next folder should be the same as the output folder defined in the script
     # crime_1../Fig5.../data_prep/data_prep_zero_pad_crime.py
-    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/"
+    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/zpad_data/"
 
     # path to train data
     data_type = 'train'

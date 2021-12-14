@@ -19,40 +19,10 @@
 # (c) Efrat Shimron, UC Berkeley, 2021
 ####################################################################
 
-
-# TODO: remove the path to mikQNAP  - "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v18"
-
-
-####################################################################
-# older versions documentation:
-# version 5 - (1) now using data prepared by data_prep_v17,
-#             (2) data is taken from the VALIDATION set only
-#             (3) pad_ratio is added as an input variable - this makes the script specific to zero-padding experiments
-#             (4) lamda is added as an input argument to this script, and also as an input to the script functions.dict_learn_funcs.DictionaryLearningMRI (previously it used the default value)
-#             (4) num_slices = 10 by default, i.e. the script runs computations for 10 images and saves both their specific NRMSEs and the average NRMSE over these images.
-#             (5) the default of block_shape was changed from [8,8] to 8, in order to make it a single input variable. later in the code it's converted from 8 to [8,8]
-#             (6) the iterations over R and pad_ratio_vec were cancelled. Instead, we take a single value for R and a value for pad_ratio from the input args
-# version 6 - identical to version 5
-# version 7 - identical to version 6
-# version 8 - identical to version 8
-#######################################################################################################
-# 3_CS_run_test_122_imgs - this version loads an array of optimal lamda values, which was saved by the
-# script 2_find_optimal_lamda_and_display_results.
-
-# How to run this code:
-# Edit the script gen_commands.sh (in unix)
-# run it as follows:
-# cat run.sh | xargs -n1 -I{} -P10 bash -c {} > log.txt
-# This will send the run to 10 CPUs in parallel
-######################################################################################################
-# the script 3_CS_run_test_122_imgs  was copied to the PRE_SUBMISSION folder, and nothing was changed
-######################################################################################################
-
 import os
 import numpy as np
 import h5py
 import sys
-from random import random
 
 # add path to functions library - when running on mikQNAP
 sys.path.append("/mikQNAP/efrat/1_inverse_crimes/1_mirror_PyCharm_CS_MoDL_merged/SubtleCrimesRepo/")
@@ -161,7 +131,7 @@ if __name__ == '__main__':
     t = 0  # counts loaded scans. each scan contains multiple slices.
     ns = 0  # counts loaded slices
 
-    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v18"
+    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/zpad_data/"
 
     if small_dataset_flag == 1:
         basic_data_folder = basic_data_folder + '_small/'

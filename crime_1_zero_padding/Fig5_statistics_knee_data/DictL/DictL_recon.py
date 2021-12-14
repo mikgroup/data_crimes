@@ -61,7 +61,7 @@ if __name__ == '__main__':
     args = get_args()
 
     # Notice: the following path to YOUR folder. The foldername should be the same as the one defined in the script data_prep/data_prep_zero_pad_crime.py
-    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/"
+    basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/zpad_data/"
 
     # Create log directory - this is useful when sending many runs in parallel
     logdir = args.logdir

@@ -126,7 +126,7 @@ for r in range(R_vec.shape[0]):
             params.pad_ratio = pad_ratio  # zero-padding ratio
 
 
-            FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/subtle_inv_crimes_zpad_data_v19_FatSatPD/"
+            FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/zpad_FatSat_data/"
 
             # path to test data
             params.data_path = FatSat_processed_data_folder + data_type + "/pad_" + str(

@@ -106,7 +106,7 @@ for v_i in range (var_dens_type_vec.shape[0]):
 
         # NOTICE: set the following path to your own path. It should be the same path as the one defined in the
         # script crime_1_../Fig5.../data_prep/data_prep_zero_pad_crime.py
-        basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/"
+        basic_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/zpad_data/"
 
         # path to test data
         data_type = 'test'
