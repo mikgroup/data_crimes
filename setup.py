@@ -14,10 +14,10 @@ setup(
         "numpy==1.19.1",
         "Pillow==8.4.0",
         "progressbar33==2.4",
-        "pytorch_wavelets==1.2.3",
         "sigpy==0.1.20",
         "SSIM_PIL==1.0.13",
         "torch==1.6.0",  # Get corresponding cuda version: https://pytorch.org.
         "tqdm==4.48.2",
-    ]
+    ],
+    dependency_links=['https://github.com/fbcotter/pytorch_wavelets']
 )
