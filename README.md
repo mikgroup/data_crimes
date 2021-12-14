@@ -21,9 +21,9 @@ To use this package:
 
 1. Clone or download it.
 
-2. Install the required python packages (tested with python 3.8 on Ubuntu 20.04 LTS) by running:
+2. Install the required python packages (tested with python 3.8 on Ubuntu 20.04 LTS) by running (creating a virtual enviroment is recommened):
 ```bash
-pip install -r requirements.txt
+pip install -e .
 ```
 
 3. In order to fully reproduce our experiments, data should be downloaded from the FastMRI database (see details in the next section).
