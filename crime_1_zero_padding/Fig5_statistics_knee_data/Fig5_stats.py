@@ -1,15 +1,14 @@
-# this code loads the results and prepares figures
+'''
+This code loads the results for the CS, DictL and DL algorithms and prepares the graphs shown in Fig 5.
+
+(c) Efrat Shimron (UT Berkeley) (2021)
+'''
+
 import numpy as np
 import sys
 import os
-
-sys.path.append("/home/efrat/anaconda3/")
-sys.path.append("/home/efrat/anaconda3/lib/python3.7/site-packages/")  # path to sigpy
-
 sys.path.append("../")  # add folder above
-
 import matplotlib.pyplot as plt
-#from matplotlib import interactive
 
 pad_ratio_vec = np.array([1,1.25,1.5,1.75,2])
 sampling_type_vec = np.array([1,2])  # 0 = random, 1 = weak var-dens, 2 = strong var-dens
@@ -34,35 +33,6 @@ DL_data_filename = './DL/DNN_results_NRMSE_and_SSIM_N_examples_122.npz'
 DL_container = np.load(DL_data_filename,allow_pickle=True)
 DL_test_set_NRMSE_arr = DL_container['NRMSE_test_set']
 DL_test_set_SSIM_arr  = DL_container['SSIM_test_set']
-
-
-
-
-
-#################### prep for plots #################
-
-# prepare x ticks labels for the NRMSE and SSIM graphs
-x = pad_ratio_vec
-x_ticks_labels = []
-for i in range(pad_ratio_vec.shape[0]):
-    pad_num = pad_ratio_vec[i]
-    if pad_num % 1 ==0.0:
-        pad_str = str(int(pad_num))
-        x_ticks_labels.append('x{}'.format(pad_str))
-    elif pad_num % 1 == 0.5:
-        pad_str = str(pad_num)
-        x_ticks_labels.append('x{}'.format(pad_str))
-    else:
-        pad_str = {}
-        x_ticks_labels.append('')
-
-
-
-# markers=['o', 'v', 's', 'h', '8']
-# colorslist = ['b','g','k']
-
-
-
 
 #################### prep for plots #################
 
@@ -127,8 +97,6 @@ for method_i in range(N_methods):
         NRMSE_diff_vec = NRMSE_av_per_pad_N - NRMSE_av_per_pad_N[0]
         NRMSE_change_vec = NRMSE_diff_vec/ NRMSE_av_per_pad_N[0] * 100
 
-
-
         # create labels & plot lines showing the NRMSE decline
         if sampling_type_vec[j] == 1:
             label_str = 'weak VD'
@@ -140,15 +108,6 @@ for method_i in range(N_methods):
 
         elif sampling_type_vec[j] == 2:
             label_str = 'strong VD'
-            # # plot horizontal and vertical straight lines:
-            # plt.plot(np.array([1, 2.05]), np.array([NRMSE_av_per_pad_N[0], NRMSE_av_per_pad_N[0]]), color='dimgray',
-            #          linestyle='--')
-            # plt.plot(np.array([2.05, 2.05]), np.array([NRMSE_av_per_pad_N[0], NRMSE_av_per_pad_N[-1]]), color='dimgray',
-            #          linestyle='solid')
-            # plt.plot(np.array([2, 2.05]), np.array([NRMSE_av_per_pad_N[-1], NRMSE_av_per_pad_N[-1]]), color='dimgray',
-            #          linestyle='--')
-
-
 
         plt.plot(pad_ratio_vec, NRMSE_av_per_pad_N, linestyle='solid', label=label_str,color=colorslist[j],
                      marker=markers[j])
@@ -156,7 +115,6 @@ for method_i in range(N_methods):
         plt.fill_between(pad_ratio_vec, (NRMSE_av_per_pad_N - NRMSE_std_per_pad_N/2), (NRMSE_av_per_pad_N + NRMSE_std_per_pad_N/2), color=colorslist[j],alpha=0.1)
 
         # print results
-        #print(f'NRMSE av {label_str}: {NRMSE_av_per_pad_N}')
         print(f'{method_str} {label_str}; NRMSE init {NRMSE_av_per_pad_N[0]:.4f}; NRMSE end {NRMSE_av_per_pad_N[-1]:.4f}; NRMSE drop {NRMSE_drop:.1f}%')
 
 
