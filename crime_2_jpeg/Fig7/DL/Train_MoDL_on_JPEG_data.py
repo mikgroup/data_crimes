@@ -21,8 +21,6 @@ import argparse
 
 
 
-
-
 def create_arg_parser():
     parser = argparse.ArgumentParser(description="Subtle inverse crimes - MoDL script")
     parser.add_argument('--q', type=int, default=100, help='JPEG compression param')

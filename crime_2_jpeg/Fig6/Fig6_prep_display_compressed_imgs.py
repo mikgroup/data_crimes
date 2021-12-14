@@ -1,10 +1,12 @@
 '''
 This code presents the example shown in Fig 6 in the paper.
 
-Notice: the code loads the MoDL networks that were trained for the experiments shown in Fig 7. So before running this
-code, you should first run the DL experiments for Fig 7.
+Notice: the code loads the MoDL networks that were trained for the experiments shown in Fig 7.
+So before running this code, you should:
+1. Go to the folder Fig7/DL/ and train the networks (or download our pre-trained networks).
+2. In that folder, run the code Test_MoDL_R4_forFig6.py - it will save results that are loaded here.
 
-NOTICE: you should update the following variables to YOUR desired path (see first code cell):
+NOTICE: in this code, you should update the following variables to YOUR desired path (see first code cell):
 FastMRI_train_folder    # input folder
 FastMRI_val_folder      # input folder
 FatSat_processed_data_folder  # desired output folder
