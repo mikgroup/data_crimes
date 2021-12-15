@@ -82,12 +82,11 @@ if __name__ == '__main__':
     im_type_str = 'full_im'
 
     # where to save the output files:
-    basic_out_folder = "/mikQNAP/NYU_knee_data/multicoil_efrat/5_JPEG_compressed_data"
+    basic_data_folder = "/mikQNAP/NYU_knee_data/multicoil_efrat/5_JPEG_compressed_data/"
 
     data_type = 'train'
 
-    basic_out_folder = basic_out_folder + '/'
-    params.data_path = basic_out_folder + data_type + "/q" + str(params.q) + "/" + im_type_str + "/"
+    params.data_path = basic_data_folder + data_type + "/q" + str(params.q) + "/" + im_type_str + "/"
     run_foldername = 'R{}_q{}'.format(params.R, params.q)
 
     print(f'CHECK THIS: params.data_path= {params.data_path}')

@@ -15,9 +15,9 @@ from torch.utils.data import Dataset, DataLoader
 import sigpy as sp
 import matplotlib.pyplot as plt
 
-from utils.subsample_fastmri import MaskFunc
-from utils.subsample_var_dens import MaskFuncVarDens_1D,MaskFuncVarDens_2D
-from utils import complex_utils as cplx
+from subtle_data_crimes.crime_2_jpeg.Fig7.DL.utils.subsample_fastmri import MaskFunc
+from subtle_data_crimes.crime_2_jpeg.Fig7.DL.utils.subsample_var_dens import MaskFuncVarDens_1D,MaskFuncVarDens_2D
+from subtle_data_crimes.crime_2_jpeg.Fig7.DL.utils import complex_utils as cplx
 
 
 
