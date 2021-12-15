@@ -4,6 +4,8 @@ This code is used for testing MoDL on JPEG-compressed data, for the results show
 Before running this script you should update the following:
 basic_data_folder - it should be the same as the output folder defined in the script /crime_2_jpeg/data_prep/jpeg_data_prep.py
 
+You should also train the networks or load our pre-trained networks.
+
 (c) Efrat Shimron, UC Berkeley, 2021
 '''
 
@@ -20,7 +22,7 @@ from utils.datasets import create_data_loaders
 
 # import custom libraries
 from utils import complex_utils as cplx
-from subtle_data_crimes.functions import error_metrics
+from subtle_data_crimes.functions.error_funcs import error_metrics
 
 use_multiple_GPUs_flag = 0
 
