@@ -39,9 +39,6 @@ if data_type == 'pathology_1':
 
 lamda = 1e-3
 
-# figs_folder = 'pathology_1_NEW_FIGS'
-# if not os.path.exists(figs_folder):
-#     os.makedirs(figs_folder)
 
 gold_dict = {}  # a python dictionary that will contain the gold standard recons
 CS_recs_dict = {}  # a python dictionary that will contain the reconstructions obtained with Compressed Sensing

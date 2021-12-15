@@ -1,5 +1,16 @@
+'''
+This script loads the results of the hyperparameter search performed by the previous script:
+1_knee_calib_CS_lamda_FatSatPD.py
+
+Make sure that the data_filename defined here is identical to the one defined in the previous script.
+
+(c) Efrat Shimron (UC Berkeley, 2021)
+'''
+
 import matplotlib.pyplot as plt
 import numpy as np
+
+# -------- Experiment set up ---------
 
 # strong VD & weak VD, lamda range larger
 R = 4
