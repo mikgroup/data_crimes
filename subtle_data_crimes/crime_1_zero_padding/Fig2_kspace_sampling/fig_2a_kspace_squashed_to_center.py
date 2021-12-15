@@ -11,7 +11,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from subtle_data_crimes.functions.utils import merge_multicoil_data, calc_pad_half
-from subtle_data_crimes.functions import genPDF, genSampling
+from subtle_data_crimes.functions.sampling_funcs import  genPDF, genSampling
 from subtle_data_crimes.functions.utils import calc_R_actual,calc_pad_half
 
 #################################################################################
