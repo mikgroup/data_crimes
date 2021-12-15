@@ -7,16 +7,17 @@ basic_data_folder - it should be the same as the output folder defined in the sc
 (c) Efrat Shimron, UC Berkeley, 2021
 '''
 
-import os
 import logging
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+
 from MoDL_single import UnrolledModel
-from utils.datasets import create_data_loaders
-# import custom libraries
+from subtle_data_crimes.functions.error_funcs import error_metrics
 from utils import complex_utils as cplx
-from subtle_data_crimes.functions import error_metrics
+from utils.datasets import create_data_loaders
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -26,11 +27,13 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 if not os.path.exists('test_figs'):
     os.makedirs('test_figs')
 
+
 ##################### create test loader ###########################
 
 class Namespace:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
+
 
 # Hyper parameters
 params = Namespace()
@@ -45,27 +48,27 @@ calib_x = int(12)
 calib_y = int(12 * params.NY / params.NX)
 params.calib = np.array([calib_x, calib_y])
 
-params.shuffle_flag = False # should be True for training, False for testing. Notice that this is not a string, semicolons aren't necessary.
+params.shuffle_flag = False  # should be True for training, False for testing. Notice that this is not a string, semicolons aren't necessary.
 
 params.sampling_flag = 'var_dens_2D'
 params.var_dens_flag = 'strong'  # 'weak' / 'strong'
-checkpoint_num = int(69)   # load saved model (trained network)
+checkpoint_num = int(69)  # load saved model (trained network)
 
-q_vec = np.array([20,50,75,999])
+q_vec = np.array([20, 50, 75, 999])
 R_vec = np.array([4])
 
-N_examples_4display=15 # number of examples to display
-N_examples_stats = 15 # number of examples over which the mean and STD will be computed
+N_examples_4display = 15  # number of examples to display
+N_examples_stats = 15  # number of examples over which the mean and STD will be computed
 
-NRMSE_av_vs_q_and_R = np.zeros((R_vec.shape[0],q_vec.shape[0]))
-NRMSE_std_vs_q_and_R = np.zeros((R_vec.shape[0],q_vec.shape[0]))
-SSIM_av_vs_q_and_R = np.zeros((R_vec.shape[0],q_vec.shape[0]))
-SSIM_std_vs_q_and_R = np.zeros((R_vec.shape[0],q_vec.shape[0]))
+NRMSE_av_vs_q_and_R = np.zeros((R_vec.shape[0], q_vec.shape[0]))
+NRMSE_std_vs_q_and_R = np.zeros((R_vec.shape[0], q_vec.shape[0]))
+SSIM_av_vs_q_and_R = np.zeros((R_vec.shape[0], q_vec.shape[0]))
+SSIM_std_vs_q_and_R = np.zeros((R_vec.shape[0], q_vec.shape[0]))
 
 N_calc_err = 200
 
-NRMSE_examples_4display = np.zeros((R_vec.shape[0],q_vec.shape[0],N_calc_err))
-SSIM_examples_4display = np.zeros((R_vec.shape[0],q_vec.shape[0],N_calc_err))
+NRMSE_examples_4display = np.zeros((R_vec.shape[0], q_vec.shape[0], N_calc_err))
+SSIM_examples_4display = np.zeros((R_vec.shape[0], q_vec.shape[0], N_calc_err))
 
 small_dataset_flag = 0
 
@@ -83,6 +86,7 @@ for r in range(R_vec.shape[0]):
         q = q_vec[qi]
         params.q = q
 
+        # update the next path to YOUR path
         basic_data_folder = "/mikQNAP/NYU_knee_data/multicoil_efrat/5_JPEG_compressed_data/"
 
         data_type = 'test'
@@ -97,7 +101,7 @@ for r in range(R_vec.shape[0]):
 
         checkpoint_file = 'R{}_q{}/checkpoints/model_{}.pt'.format(R, q, checkpoint_num)
 
-        checkpoint = torch.load(checkpoint_file,map_location=device)
+        checkpoint = torch.load(checkpoint_file, map_location=device)
 
         # load the parameters of the trained network
         params_loaded = checkpoint["params"]
@@ -114,9 +118,9 @@ for r in range(R_vec.shape[0]):
         with torch.no_grad():
             for iter, data in enumerate(test_loader):
                 if iter % 10 == 0:
-                    print('loading test batch ',iter)
+                    print('loading test batch ', iter)
 
-                #input_batch, target_batch, mask_batch, target_no_JPEG_batch = data
+                # input_batch, target_batch, mask_batch, target_no_JPEG_batch = data
                 input_batch, target_batch, mask_batch = data
 
                 # display the mask (before converting it to torch tensor)
@@ -145,68 +149,63 @@ for r in range(R_vec.shape[0]):
                     im_target = cplx.to_numpy(target_batch.cpu())[i, :, :]
                     im_out = cplx.to_numpy(out_batch.cpu())[i, :, :]
 
-                    MoDL_err = error_metrics(np.abs(im_target),np.abs(im_out))
+                    MoDL_err = error_metrics(np.abs(im_target), np.abs(im_out))
                     MoDL_err.calc_NRMSE()
                     MoDL_err.calc_SSIM()
 
                     NRMSE_test_list.append(MoDL_err.NRMSE)
                     SSIM_test_list.append(MoDL_err.SSIM)
 
-                    if cnt<N_calc_err:
+                    if cnt < N_calc_err:
                         NRMSE_examples_4display[r, qi, cnt - 1] = MoDL_err.NRMSE
                         SSIM_examples_4display[r, qi, cnt - 1] = MoDL_err.SSIM
 
-                    if cnt<=N_examples_4display:
-                        target_im_rotated = np.rot90(np.abs(im_target),2)
-                        im_out_rotated = np.rot90(np.abs(im_out),2)
+                    if cnt <= N_examples_4display:
+                        target_im_rotated = np.rot90(np.abs(im_target), 2)
+                        im_out_rotated = np.rot90(np.abs(im_out), 2)
                         NX = im_out_rotated.shape[0]
                         NY = im_out_rotated.shape[1]
 
+                        if (r == 0) & (qi == 0) & (iter == 0):
+                            TARGETS = np.zeros((NX, NY, q_vec.shape[0], N_examples_4display))
+                            RECS = np.zeros((NX, NY, R_vec.shape[0], q_vec.shape[0], N_examples_4display))
 
-                        if (r==0) & (qi==0) & (iter==0):
-                            TARGETS = np.zeros((NX,NY,q_vec.shape[0],N_examples_4display))
-                            RECS = np.zeros((NX,NY,R_vec.shape[0],q_vec.shape[0],N_examples_4display))
+                        TARGETS[:, :, qi, iter] = target_im_rotated
+                        RECS[:, :, r, qi, iter] = im_out_rotated
 
-                        TARGETS[:,:,qi,iter] = target_im_rotated
-                        RECS[:,:,r,qi,iter] = im_out_rotated
-
-
-                        #if iter==0:
+                        # if iter==0:
                         fig = plt.figure()
                         plt.imshow(target_im_rotated, cmap="gray")
                         plt.colorbar(shrink=0.5)
                         plt.axis('off')
-                        plt.title('target - iter={} - R{} q{}'.format(iter,R,q))
+                        plt.title('target - iter={} - R{} q{}'.format(iter, R, q))
                         plt.show()
-                        figname = 'check3_target_R{}_q{}_iter{}'.format(R,q,iter)
+                        figname = 'check3_target_R{}_q{}_iter{}'.format(R, q, iter)
                         fig.savefig(figname)
 
                 if iter >= N_examples_stats:
                     break
 
-
-            # NRMSE - calc av & std                
+            # NRMSE - calc av & std
             NRMSE_test_array = np.asarray(NRMSE_test_list)
             NRMSE_av = np.mean(NRMSE_test_array[0:N_examples_stats].squeeze())
             NRMSE_std = np.std(NRMSE_test_array[0:N_examples_stats].squeeze())
-            NRMSE_av_vs_q_and_R[r,qi] = NRMSE_av
+            NRMSE_av_vs_q_and_R[r, qi] = NRMSE_av
             NRMSE_std_vs_q_and_R[r, qi] = NRMSE_std
 
             # SSIM - calc av & std                
             SSIM_test_array = np.asarray(SSIM_test_list)
             SSIM_av = np.mean(SSIM_test_array[0:N_examples_stats].squeeze())
             SSIM_std = np.std(SSIM_test_array[0:N_examples_stats].squeeze())
-            SSIM_av_vs_q_and_R[r,qi] = SSIM_av
+            SSIM_av_vs_q_and_R[r, qi] = SSIM_av
             SSIM_std_vs_q_and_R[r, qi] = SSIM_std
 
-            print('q={} NRMSE_av = {}, SSIM_av = {}'.format(q, NRMSE_av,SSIM_av))
-
-
+            print('q={} NRMSE_av = {}, SSIM_av = {}'.format(q, NRMSE_av, SSIM_av))
 
 # save NRMSE_av & SSIM
 print('saving results')
 results_filename = 'Res_for_Fig6.npz'
-np.savez(results_filename, R_vec=R_vec,q_vec=q_vec,params=params,checkpoint_num=checkpoint_num,
+np.savez(results_filename, R_vec=R_vec, q_vec=q_vec, params=params, checkpoint_num=checkpoint_num,
          NRMSE_av_vs_q_and_R=NRMSE_av_vs_q_and_R,
          NRMSE_std_vs_q_and_R=NRMSE_std_vs_q_and_R,
          SSIM_av_vs_q_and_R=SSIM_av_vs_q_and_R,
