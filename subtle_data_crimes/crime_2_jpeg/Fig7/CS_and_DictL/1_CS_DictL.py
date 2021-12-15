@@ -11,7 +11,6 @@ Note: these parameters were found when the algorithms were implemented on *magni
 crimes scenarios), hence if your research involves *complex* MR images, a new hyperparameter search should be performed.
 
 Before running this script you should update the following:
-  project_full_path
   basic_data_folder - it should be the same as the output folder defined in the script /crime_2_jpeg/data_prep/jpeg_data_prep.py
 
 Example - how to run this code from the linux command line:
@@ -27,20 +26,14 @@ from optparse import OptionParser
 import mkl
 import sigpy as sp
 import sigpy.plot as pl
-import sys
 import h5py
 import os
 from sigpy import mri as mr
-
-# add path to functions library
-project_full_path = "/mikQNAP/efrat/1_inverse_crimes/1_mirror_PyCharm_CS_MoDL_merged/SubtleCrimesRepo/"
-sys.path.append(project_full_path)
-sys.path.insert(1, './mri-sim-py/epg')
 import warnings
 warnings.simplefilter(action='ignore', category=FutureWarning)
 from subtle_data_crimes.functions.dict_learn_funcs import DictionaryLearningMRI
-from subtle_data_crimes.functions import gen_2D_var_dens_mask
-from subtle_data_crimes.functions import error_metrics
+from subtle_data_crimes.functions.sampling_funcs import gen_2D_var_dens_mask
+from subtle_data_crimes.functions.error_funcs import error_metrics
 
 num_CPUs = 75
 mkl.set_num_threads(num_CPUs)  # the number in the brackets determines the number of CPUs. 1 is recommended for the DictL algorithm! Otherwise there's a lot of overhead (when the run is spread accross multiple cpus) and the comptuation time becomes longer.
