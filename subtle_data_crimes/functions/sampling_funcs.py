@@ -7,7 +7,6 @@ Efrat Shimron (UC Berkeley, 2021).
 """
 
 import numpy as np
-#from functions.sampling_funcs import genPDF,genSampling
 import matplotlib.pyplot as plt
 
 

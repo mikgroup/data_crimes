@@ -6,7 +6,6 @@ Efrat Shimron (UC Berkeley, 2021).
 
 import numpy as np
 from subtle_data_crimes.functions.utils import merge_multicoil_data, calc_pad_half
-import matplotlib.pyplot as plt
 
 ################################## helper func #########################################################
 def zpad_merge_scale(ksp_block_multicoil, pad_ratio):
@@ -26,8 +25,6 @@ def zpad_merge_scale(ksp_block_multicoil, pad_ratio):
 
     padding_lengths = ((0, 0), (pad_half_dim1, pad_half_dim1), (pad_half_dim2, pad_half_dim2))
 
-    #NX_padded = int(NX * pad_ratio)
-    #NY_padded = int(NY * pad_ratio)
 
     ksp_block_multicoil_padded = np.pad(ksp_block_multicoil, padding_lengths, mode='constant',
                                         constant_values=(0, 0))

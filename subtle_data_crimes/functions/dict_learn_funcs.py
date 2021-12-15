@@ -1,24 +1,26 @@
-# This code implements an MRI reconstruction algorithm based on dictionary learning.
-# The dictionary is initialized using the zero-filled k-space data, and is then learned directly from the under-sampled
-# data in an iterative optimization. Notice that the reconstruction algorithm uses only the undersampled k-space data
-# from a single images, i.e. it does not have access to fully-sampled examples and/or k-space data of other images.
+'''
+This code implements an MRI reconstruction algorithm based on dictionary learning.
+The dictionary is initialized using the zero-filled k-space data, and is then learned directly from the under-sampled
+data in an iterative optimization. Notice that the reconstruction algorithm uses only the undersampled k-space data
+from a single images, i.e. it does not have access to fully-sampled examples and/or k-space data of other images.
 
-# The code is based on Jon Tamir's tutorial:
-# "MRI Reconstruction using Learned Dictionaries" ISMRM 2020 Educational Session.
-# https://github.com/utcsilab/dictionary_learning_ismrm_2020
-# In the current code the dictionary is adapted to varying filter sizes, such that the image size
-# does not need to be a multiplication of the filter size (which is usually 8x8).
+The code is based on Jon Tamir's tutorial:
+"MRI Reconstruction using Learned Dictionaries" ISMRM 2020 Educational Session.
+https://github.com/utcsilab/dictionary_learning_ismrm_2020
+In the current code the dictionary is adapted to varying filter sizes, such that the image size
+does not need to be a multiplication of the filter size (which is usually 8x8).
 
-# The reconstruction algorithm is based on this paper:
-# S Ravishankar, Y Bresler, MR Image Reconstruction From Highly Undersampled k- Space Data by Dictionary Learning,
-# IEEE Transactions on Medical Imaging, vol. 30, no.5, pp. 1028-1041, May 2011.
+The reconstruction algorithm is based on this paper:
+S Ravishankar, Y Bresler, MR Image Reconstruction From Highly Undersampled k- Space Data by Dictionary Learning,
+IEEE Transactions on Medical Imaging, vol. 30, no.5, pp. 1028-1041, May 2011.
 
-# (c) Efrat Shimron (UC Berkeley) & Jon Tamir (UT Austin) 2021
+(c) Efrat Shimron (UC Berkeley) & Jon Tamir (UT Austin) 2021
+'''
 
 import numpy as np
 import sigpy as sp
 from sigpy.mri.linop import Sense
-import matplotlib.pyplot as plt
+
 
 
 def omp_single(yi, D, num_nonzero_coeffs=3, use_sigpy=False, device=None):

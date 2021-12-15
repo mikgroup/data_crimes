@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 from PIL import Image
 import os
 
@@ -108,12 +107,14 @@ def zpad_merge_scale(ksp_block_multicoil, pad_ratio):
 # --------------------- JPEG compression ----------------------------
 
 def JPEG_compression(im_mag, quality_val=100):
-    # inputs:
-    # im_mag - a magnitude image
-    # quality_val - a paramter that controls the JPEG compression quality:
-    #      quality_val=100 yields the mininal compression
-    #      quality_val=75 is JPEG's default
-    #      quality_val=5 (or close to 0) yields an extreme compression
+    '''
+    inputs:
+    im_mag - a magnitude image
+    quality_val - a paramter that controls the JPEG compression quality:
+    quality_val=100 yields the mininal compression
+    quality_val=75 is JPEG's default
+    quality_val=5 (or close to 0) yields an extreme compression
+    '''
 
     # normalize the range to [0,1]
     im_mag = im_mag / np.max(im_mag)
@@ -190,7 +191,5 @@ def extract_block(im, block_asp_ratio_x, block_asp_ratio_y, x_margin, y_margin):
         else:
             print('block contains mostly noise - not good - extract a different one')
 
-    # print('block size:')
-    # print(im_block.shape)
 
     return im_block
