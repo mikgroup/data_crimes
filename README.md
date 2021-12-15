@@ -2,7 +2,7 @@
 
 Official github repository for the paper [Subtle data crimes: naively training machine learning algorithms could lead to overly-optimistic results](https://arxiv.org/abs/2109.08237) and [ISMRM abstract](https://index.mirasmart.com/ISMRM2021/PDFfiles/0222.html).
 
-Notice: this repo is still under construction. It will be finalized over the next couple of weeks (Dec 2021).
+### Notice: this repo is still under construction! It will be finalized over the next couple of weeks (last update: Dec 14, 2021).
 
 
 
