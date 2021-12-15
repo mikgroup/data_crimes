@@ -18,7 +18,8 @@ import numpy as np
 import sigpy as sp
 from sigpy import mri as mr
 
-from subtle_data_crimes.functions import error_metrics, gen_2D_var_dens_mask
+from subtle_data_crimes.functions.error_funcs import error_metrics
+from subtle_data_crimes.functions.sampling_funcs import gen_2D_var_dens_mask
 
 #################################################################################
 ## Experiment set-up

@@ -1,5 +1,9 @@
-import numpy as np
-import matplotlib.pyplot as plt
+'''
+This script loads the CS hyperparameter search results and finds the lambda that produced the lowest error.
+
+(c) Efrat Shimron (UC Berkeley, 2021)
+'''
+
 import matplotlib.pyplot as plt
 import numpy as np
 

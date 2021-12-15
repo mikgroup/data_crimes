@@ -1,22 +1,27 @@
-# To run the CS test session, please run the following from the linux command line:
-# ./gen.commands.sh
-# cat run.sh | xargs -n1 -I{} -P20 bash -c {} > log.txt   (replace 20 with the number of CPUs that you want to use)
+'''
+To run the CS test session, please run the following from the linux command line:
+./gen.commands.sh
+cat run.sh | xargs -n1 -I{} -P20 bash -c {} > log.txt   (replace 20 with the number of CPUs that you want to use)
 
 
-# Documentation
-# This script runs the set of experiments for the CS statistics in Fig 5 (Subtle Inverse Crimes paper).
-# Before running this script, please run the following scripts:
-# 1_hyperparam_search_CS_lamda_zpad_crime.py - that script performs the hyperparam (lamda) search
-# 2_find_optimal_lamda_and_display_results - scripts takes the results of the previous one and finds the optimal lamda for each image size.
-#
-# Instructions - how to run the CS reconstruction experiments in parallel by using this script:
-# 1. Edit the bash script gen_commands.sh - edit ot only in linux, NOT in WINDOWS/PYCHARM! (or it will not compile).
-# 2. run it: ./gen_commands.sh
-#    This will create a scritp named run.sh which includes all the runs required for the statistics
-# 3. Exectue the script "run.sh" from the linux command line as follows (P20 will send 20 runs in paralle):
-# cat run.sh | xargs -n1 -I{} -P20 bash -c {} > log.txt
+Documentation
+This script runs the set of experiments for the CS statistics in Fig 5 (Subtle Inverse Crimes paper).
+Before running this script, please run the following scripts:
+1_hyperparam_search_CS_lamda_zpad_crime.py - that script performs the hyperparam (lamda) search
+2_find_optimal_lamda_and_display_results - scripts takes the results of the previous one and finds the optimal lamda for each image size.
 
-# (c) Efrat Shimron, UC Berkeley, 2021
+Instructions - how to run the CS reconstruction experiments in parallel by using this script:
+1. Edit the bash script gen_commands.sh - edit ot only in linux, NOT in WINDOWS/WSL/PYCHARM! (or it will not compile).
+2. run it: ./gen_commands.sh
+   This will create a scritp named run.sh which includes all the runs required for the statistics
+3. Execute the script "run.sh" from the linux command line as follows (P20 will send 20 runs in paralle):
+cat run.sh | xargs -n1 -I{} -P20 bash -c {} > log.txt
+
+Notice: before running this script, make sure that the basic_data_folder defined here is identical to the output path
+defined in Fig5../data_prep/data_prep_zero_pad_crime.py
+
+(c) Efrat Shimron, UC Berkeley, 2021
+'''
 ####################################################################
 
 import os
@@ -30,7 +35,8 @@ import numpy as np
 import sigpy as sp
 from sigpy import mri as mr
 
-from subtle_data_crimes.functions import error_metrics, gen_2D_var_dens_mask
+from subtle_data_crimes.functions.error_funcs import error_metrics
+from subtle_data_crimes.functions.sampling_funcs import gen_2D_var_dens_mask
 
 mkl.set_num_threads(
     5)  # the number in the brackets determines the number of CPUs. 1 is recommended for the DictL algorithm! Otherwise there's a lot of overhead (when the run is spread accross multiple cpus) and the comptuation time becomes longer.

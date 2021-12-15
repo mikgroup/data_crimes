@@ -1,3 +1,9 @@
+'''
+This script reads the results of the CS experiments performed for fig 5.
+
+(c) Efrat Shimron, UC Berkeley, 2021
+'''
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -31,8 +37,6 @@ for samp_i in range(sampling_type_vec.shape[0]):
 
         CS_test_set_NRMSE_arr[:, pad_i, samp_i] = CS_NRMSE_arr
         CS_test_set_SSIM_arr[:, pad_i, samp_i] = CS_SSIM_arr
-
-print('')
 
 filename = 'CS_test_results.npz'
 np.savez(filename, CS_test_set_NRMSE_arr=CS_test_set_NRMSE_arr, CS_test_set_SSIM_arr=CS_test_set_SSIM_arr)
