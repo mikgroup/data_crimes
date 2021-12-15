@@ -18,7 +18,12 @@ import numpy as np
 import sigpy as sp
 from sigpy import mri as mr
 
-from subtle_data_crimes.functions import error_metrics, gen_2D_var_dens_mask
+from subtle_data_crimes.functions.error_funcs import error_metrics
+from subtle_data_crimes.functions.sampling_funcs import  gen_2D_var_dens_mask
+
+#################################################################################
+##          set the following to YOUR path - see comment above
+#################################################################################
 
 # update the next field and make sure that it's the same one as defined in Fig4_pathology_example/data_prep.py
 FatSat_processed_data_folder = "/mikQNAP/NYU_knee_data/efrat/public_repo_check/zpad_FatSat_data/"
