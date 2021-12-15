@@ -1,38 +1,25 @@
-# Instructions - how to calibrate parameters by sending many parallel runs:
-# 1. gen_commands.sh - edit this script using linux only, DO NOT EDIT IT IN WINDOWS/PYCHARM! it donesn't compile afterwards.
-# 2. make it excutable by running:
-# 3. run it: ./gen_commands.sh
-#    This will create a scritp named run.sh
-# 4. Mkae the print_timestamp script exectuable by running:
-#    chmod +x print_timestamp.sh
-# 5. TODO: explain here that "gen_commands" will create different run files for each pad_ratio, and they can be sent separately
-# In order to send 20 runs in parallel, run this (in the linux command line):
-# cat run.sh | xargs -n1 -I{} -P20 bash -c {} > log.txt
+'''
+This script will be called by the python runs that conduct the DictL experiments. For more info, please see the help
+of the previous script, named 1_DictL_generate_pathology_test_commands
 
-####################################################################
-# version documentation:
-# version 5 - (1) now using data prepared by data_prep_v17,
-#             (2) data is taken from the VALIDATION set only
-#             (3) pad_ratio is added as an input variable - this makes the script specific to zero-padding experiments
-#             (4) lamda is added as an input argument to this script, and also as an input to the script functions.dict_learn_funcs.DictionaryLearningMRI (previously it used the default value)
-#             (4) num_slices = 10 by default, i.e. the script runs computations for 10 images and saves both their specific NRMSEs and the average NRMSE over these images.
-#             (5) the default of block_shape was changed from [8,8] to 8, in order to make it a single input variable. later in the code it's converted from 8 to [8,8]
-#             (6) the iterations over R and pad_ratio_vec were cancelled. Instead, we take a single value for R and a value for pad_ratio from the input args
-# version 6 - identical to version 5
-# version 7 - identical to version 6
-# version 8 - identical to version 8
-##########################################################################################
+Notice: before using this script you should update the variable basic_data_folder such that the foldername will be identical
+to the one defined as the output path in the data preparation script, which is:
+Fig4_pathology_example/data_prep/data_prep_FatSatPD.py
+
+(c) Efrat Shimron, UC Berkeley, 2021
+'''
+
 import os
 from optparse import OptionParser
 
 import h5py
-# add path to functions library - when running on mikQNAP
 import matplotlib.pyplot as plt
 import mkl
 import numpy as np
 import sigpy as sp
 
-from subtle_data_crimes.functions import error_metrics, gen_2D_var_dens_mask
+from subtle_data_crimes.functions.sampling_funcs import gen_2D_var_dens_mask
+from subtle_data_crimes.functions.error_funcs import error_metrics
 from subtle_data_crimes.functions.dict_learn_funcs import DictionaryLearningMRI
 
 
@@ -48,9 +35,6 @@ def get_args():
     parser.add_option('--batch_size', '--batch_size', type='int', default=500, help='batch_size')
     parser.add_option('--block_shape', '--block_shape', type='int', default=8, help='block_shape')
     parser.add_option('--block_strides', '--block_strides', type='int', default=[4, 4], help='block_strides')
-    # parser.add_option('--nu', '--nu', type='int', default=0.1, help='nu for Dict Learning')
-
-    # new in version 5:
     parser.add_option('--pad_ratio', '--pad_ratio', type='float', default=1,
                       help='zero-padding ratio (preprocessed data will be chosen accordingly)')
     parser.add_option('--lamda', '--lamda', type='float', default=0.01,
@@ -71,8 +55,6 @@ def get_args():
 
 if __name__ == '__main__':
     args = get_args()
-
-    # print(args)
 
     # Create log directory - this is useful when sending many runs in parallel
     logdir = args.logdir
@@ -108,7 +90,6 @@ if __name__ == '__main__':
         pad_ratio_str = pad_ratio
 
     # hard-coded variables
-    # n_proc = 40  # number of cpu cores to use, when possible
     device = sp.cpu_device  # which device to use (not all is supported on GPU)
     mode = 'omp'  # for the dictionary learning algorithm
 

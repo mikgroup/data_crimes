@@ -5,9 +5,7 @@ Official github repository for the paper [Subtle data crimes: naively training m
 ### Notice: this repo is still under construction! It will be finalized over the next few days (last update: Dec 14, 2021).
 
 
-
 ![subtle_fig_1](logo_arXiv_paper.png)
-
 
 
 

@@ -1,14 +1,11 @@
-# This script loads the results of several runs of 2_DictL_recon_pathology.py, which were perfomred for
-# pad_ratio = 1, weak VD
-# pad_ratio = 2, weak VD
-# pad_ratio = 1, strong VD
-# pad_ratio = 2, strong VD
-#
-# (c) Efrat Shimron, UC Berkeley, 2021
+'''
+This script loads the results of the python runs sent using the previous two scripts.
+It also aggregates and saves them into two arrays.
 
+(c) Efrat Shimron, UC Berkeley, 2021
+'''
 
 import os
-
 import numpy as np
 
 R = 4  # np.array([4])
@@ -24,9 +21,6 @@ num_cpus = str(10)  # number of CPUs that each run can employ
 pathology_slice = np.array([22])
 
 data_type = 'pathology_1'
-# logdir = data_type + '_results'
-# if not os.path.exists(logdir):
-#    os.makedirs(logdir)
 
 gold_dict = {}  # a python dictionary that will contain the gold standard recons
 DictL_recs_dict = {}  # a python dictionary that will contain the reconstructions obtained with Compressed Sensing
