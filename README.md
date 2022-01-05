@@ -73,7 +73,7 @@ The Compressed Sensing code implemented was based on [Sigpy](https://sigpy.readt
 
 The Dictionary Learning algorithm implementation is based on Jon Tamir's [ISMRM 2020 educational tutorial](https://github.com/utcsilab/dictionary_learning_ismrm_2020).
 
-
+The authors acknowledge funding from grants U24 EB029240-01, R01EB009690, R01HL136965.
 
 ## Terms of use
 
