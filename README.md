@@ -4,9 +4,11 @@ Official github repository for the paper [Subtle data crimes: naively training m
 
 ![subtle_fig_1](logo_arXiv_paper.png)
 
-### Notice: this repo is still under construction! It will be finalized over the next few days (last update: Jan 5, 2022).
+### Notice: this repo is still under construction! 
+It will be finalized soon(last update: Jan 5, 2022).
 
-### Notice: the repository's name recently changed from "subtle_data_crimes" to "data_crimes". If you already cloned the repository with the previous name, you can update the remote origin using this git command:
+### Notice: repository name change 
+The repository's name recently changed from "subtle_data_crimes" to "data_crimes". If you already cloned the repository with the previous name, you can update the remote origin using this git command:
 ```git remote set-url origin git@github.com:mikgroup/data_crimes.git```
 
 
