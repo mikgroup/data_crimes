@@ -2,7 +2,10 @@
 
 Official github repository for the paper [Subtle data crimes: naively training machine learning algorithms could lead to overly-optimistic results](https://arxiv.org/abs/2109.08237) and [ISMRM abstract](https://index.mirasmart.com/ISMRM2021/PDFfiles/0222.html).
 
-### Notice: this repo is still under construction! It will be finalized over the next few days (last update: Dec 14, 2021).
+### Notice: this repo is still under construction! It will be finalized over the next few days (last update: Jan 5, 2022).
+
+Note: the repository name recently changed from "subtle_data_crimes" to "data_crimes". If you already cloned the repository with the previous name, you can update the remote origin using this git command:
+```git remote set-url origin https://github.com/mikgroup/data_crime```s
 
 
 ![subtle_fig_1](logo_arXiv_paper.png)
