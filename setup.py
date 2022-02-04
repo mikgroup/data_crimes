@@ -12,7 +12,7 @@ setup(
         "mkl==2021.4.0",
         "mkl-service==2.3.0",
         "numpy==1.19.1",
-        "Pillow==8.4.0",
+        "Pillow==9.0.0",
         "progressbar33==2.4",
         "sigpy==0.1.20",
         "SSIM_PIL==1.0.13",
