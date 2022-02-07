@@ -1,7 +1,3 @@
-##############################################################################
-# To run this code, use the conda virtual environment "subtle_env"
-# (two identical environments were defined on mikneto or mikshoov)
-###############################################################################
 import logging
 import os
 
@@ -37,9 +33,6 @@ device = torch.device('cuda:1' if torch.cuda.is_available() else 'cpu')
 class Namespace:
     def __init__(self, **kwargs):
         self.__dict__.update(kwargs)
-
-
-# TODO: "params" is defind here but it is also LOADED later in the code - check why we need it both here and there
 
 # Hyper parameters
 params = Namespace()
