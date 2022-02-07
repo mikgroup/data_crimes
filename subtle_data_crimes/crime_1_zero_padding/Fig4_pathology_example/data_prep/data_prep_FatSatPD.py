@@ -15,11 +15,6 @@ FatSat_processed_data_folder  # desired output folder
 (c) Efrat Shimron, UC Berkeley, 2021.
 '''
 
-
-import sys
-# add the project's folder - for access to the functions library:
-sys.path.append("/mikQNAP/efrat/1_inverse_crimes/2_public_repo_mirror_PyCharm/")
-
 import numpy as np
 import os
 import h5py
@@ -343,7 +338,7 @@ for data_i in range(5):  # 0 = train, 1 = val, 2 = test, 3 = pathology case I, 4
                             int(100 * pad_ratio)) + "/" + im_type_str + "/"
 
 
-                        if not os.path.exists(out_folder):
+                       ll if not os.path.exists(out_folder):
                             os.makedirs(out_folder)
 
                         # Save data in h5 file

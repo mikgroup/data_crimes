@@ -1,3 +1,9 @@
+'''
+This code loads the results for the CS, DictL and DL algorithms and prepares the graphs shown in Fig 7.
+
+(c) Efrat Shimron (UT Berkeley) (2021)
+'''
+
 import numpy as np
 import matplotlib.pyplot as plt
 import os
