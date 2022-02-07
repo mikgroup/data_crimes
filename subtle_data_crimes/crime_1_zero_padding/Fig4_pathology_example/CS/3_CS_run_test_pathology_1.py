@@ -151,7 +151,7 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
                     gold_dict[pad_ratio, samp_type] = rec_gold_rotated
                     CS_recs_dict[pad_ratio, samp_type] = rec_CS_rotated
 
-                    # # --------- TODO: move this to the display code -----------
+                    # # ---------  display figures -----------
                     # A = error_metrics(rec_gold, rec)
                     # A.calc_NRMSE()
                     # A.calc_SSIM()
@@ -175,15 +175,7 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
                     # plt.colorbar(shrink=0.25)
                     # plt.suptitle(f'{data_type} data; R={R}; pad_ratio={pad_ratio}; {samp_type} VD samp; scan {t}; slice {ns}')
                     # plt.show()
-                    # figname = figs_folder + f'/slice{ns}_pad_{pad_ratio}_{samp_type}.png'
-                    # fig.savefig(figname)
-                    #
-                    # fig = plt.figure()
-                    #
-                    #
-                    #
-                    #
-                    # # figures for the paper
+
                     # # zoom-in coordinates for pathology 1
                     # x1 = 335
                     # x2 = 380
@@ -203,8 +195,6 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
                     # plt.axis('off')
                     # plt.clim(0, cmax)
                     # plt.show()
-                    # figname = figs_folder + f'/rec_gold_pad_x{pad_ratio_str}_zoomed.png'
-                    # fig.savefig(figname, dpi=1000)
                     #
                     # # gold standard zoomed - eps figure
                     # fig = plt.figure()
@@ -212,8 +202,6 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
                     # plt.axis('off')
                     # plt.clim(0, cmax)
                     # plt.show()
-                    # figname = figs_folder + f'/rec_gold_pad_x{pad_ratio_str}_zoomed.eps'
-                    # fig.savefig(figname, format='eps', dpi=1000)
 
                     # # rec CS zoomed - png figure
                     # fig = plt.figure()
@@ -221,8 +209,7 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
                     # plt.axis('off')
                     # plt.clim(0, cmax)
                     # plt.show()
-                    # figname = figs_folder + f'/CS_rec_pad_x{pad_ratio_str}_{samp_type}_VD_zoomed'
-                    # fig.savefig(figname, dpi=1000)
+
                     #
                     # # rec CS zoomed - eps figure
                     # fig = plt.figure()
@@ -230,10 +217,7 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
                     # plt.axis('off')
                     # plt.clim(0, cmax)
                     # plt.show()
-                    # figname = figs_folder + f'/CS_rec_pad_x{pad_ratio_str}_{samp_type}_VD_zoomed.eps'
-                    # fig.savefig(figname, format='eps', dpi=1000)
-                    #
-                    #
+
                     # if pad_ratio==2:
                     #     # gold standard full-size .eps figure
                     #     fig = plt.figure()
@@ -241,8 +225,6 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
                     #     plt.axis('off')
                     #     plt.clim(0, cmax)
                     #     plt.show()
-                    #     figname = figs_folder + f'/rec_gold_full_size.eps'
-                    #     fig.savefig(figname, format='eps', dpi=1000)
                     #
                     #     # gold standard full-size .png figure
                     #     fig = plt.figure()
@@ -250,13 +232,7 @@ for pad_i, pad_ratio in enumerate(pad_ratio_vec):
                     #     plt.axis('off')
                     #     plt.clim(0, cmax)
                     #     plt.show()
-                    #     figname = figs_folder + f'/rec_gold_full_size.eps'
-                    #     fig.savefig(figname, dpi=1000)
 
-# --------------------- save ----------------------
-# save results
-# np.savez(data_filename,NRMSE_arr=NRMSE_arr,masks_dict=masks_dict,R_vec=R_vec,pad_ratio_vec=pad_ratio_vec,
-#         sampling_type_vec=sampling_type_vec,sampling_flag=sampling_flag,lamda_vec=lamda_vec,num_slices=num_slices)
 
 # save the recons
 results_dir = data_type + f'_results_R{R}/'
