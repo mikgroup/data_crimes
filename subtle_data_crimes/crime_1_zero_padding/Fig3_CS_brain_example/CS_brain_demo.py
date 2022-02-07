@@ -1,5 +1,10 @@
 '''
 This script creates the example shown in Figure 3 in the Subtle Data Crimes paper.
+
+To run this code, please download the file named "file_brain_AXT2_207_2070504.h5" from the FastMRI database
+ and place it in this folder:
+'../brain_data/'
+
 (c) Efrat Shimron, UC Berkeley, 2021.
 '''
 

@@ -1,6 +1,11 @@
 '''
 This code demonstrates subtle crime I with Compressed sensing.
 It reproduces the results in Figure 2a of the Subtle Data Crime paper.
+
+To run this code, please download the file named "file_brain_AXT2_207_2070504.h5" from the FastMRI database
+ and place it in this folder:
+'../brain_data/'
+
 (c) Efrat Shimron, UC Berkeley, 2021.
 '''
 

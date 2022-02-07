@@ -35,9 +35,18 @@ To use this package:
 pip install --upgrade pip
 pip install -e .
 ```
-3. If you prefer to install using coda, you can also run this:
 
-   ```conda install -c intel mkl-service==2.3.0```
+    If you prefer to install using coda, you can also run this:
+
+     ```conda install -c intel mkl-service==2.3.0```
+
+3. Install the ```pytorch_wavelets library``` following the instructions [here](https://pytorch-wavelets.readthedocs.io/en/latest/readme.html). Specifically:
+
+  ```
+  git clone https://github.com/fbcotter/pytorch_wavelets
+  cd pytorch_wavelets
+  pip install .
+  ```
 
 4. In order to fully reproduce our experiments, data should be downloaded from the FastMRI database (see details in the next section).
 

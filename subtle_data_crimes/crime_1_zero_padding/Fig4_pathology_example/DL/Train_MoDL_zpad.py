@@ -12,11 +12,9 @@ basic_data_folder - it should be the same as the output folder defined in the sc
 # python3 Train_xxxxx.py  --R 4 --pad_ratio 1 --gpu 0 --var_dens_flag 'strong'
 ###############################################################################################
 
-
 import argparse
 import copy
 import logging
-# %matplotlib notebook
 import os
 
 import matplotlib.pyplot as plt
@@ -27,8 +25,8 @@ import torch.nn as nn
 from subtle_data_crimes.crime_1_zero_padding.Fig4_pathology_example.DL.MoDL_single import UnrolledModel
 from subtle_data_crimes.crime_1_zero_padding.Fig4_pathology_example.DL.utils import complex_utils as cplx
 from subtle_data_crimes.crime_1_zero_padding.Fig4_pathology_example.DL.utils.datasets import \
-    create_data_loaders  # , calc_scaling_factor
-from subtle_data_crimes.functions import error_metrics
+    create_data_loaders 
+from subtle_data_crimes.functions.error_funcs import error_metrics
 
 
 def create_arg_parser():
