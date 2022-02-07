@@ -5,16 +5,18 @@ Official github repository for the paper [Subtle data crimes: naively training m
 ![subtle_fig_1](logo_arXiv_paper.png)
 
 ### Notice: this repo is still under construction!
-It will be finalized soon(last update: Jan 5, 2022).
+It will be finalized soon(last update: Feb 7, 2022).
 
 ### Notice: repository name change
-The repository's name recently changed from "subtle_data_crimes" to "data_crimes". If you already cloned the repository with the previous name, you can update the remote origin using this git command:
+The repository's name recently changed from "subtle_data_crimes" to "data_crimes".
+
+- If you already cloned the repository with the previous name, you can update the remote origin using this git command:
 ```git remote set-url origin git@github.com:mikgroup/data_crimes.git```
 
-Note: please notice that while our git repo is named ```data_crimes```, the code package is named ```subtle_data_crimes```.
-to import, you can do for example from subtle_data_crimes.functions.utils import calc_pad_half
+- The code package is still named ```subtle_data_crimes```, so
+importing functions is done as follows: ```subtle_data_crimes.functions.utils import calc_pad_half```
 or
-import subtle_data_crimes.functions.utils as utils
+```import subtle_data_crimes.functions.utils as utils```
 
 
 
@@ -34,7 +36,8 @@ pip install --upgrade pip
 pip install -e .
 ```
 3. If you prefer to install using coda, you can also run this:
-```conda install -c intel mkl-service==2.3.0```
+
+   ```conda install -c intel mkl-service==2.3.0```
 
 4. In order to fully reproduce our experiments, data should be downloaded from the FastMRI database (see details in the next section).
 
