@@ -1,6 +1,11 @@
 # Data Crimes
 
-Official github repository for the paper [Subtle data crimes: naively training machine learning algorithms could lead to overly-optimistic results](https://arxiv.org/abs/2109.08237) and [ISMRM abstract](https://index.mirasmart.com/ISMRM2021/PDFfiles/0222.html).
+Official github repository for the paper
+"Implicit Data Crimes: Machine Learning Bias Arising from Misuse of Public Data". The paper has been accepted to PNAS (Feb 2022) and will be published soon with full open access.
+
+Here's the arXiv preprint
+[Subtle data crimes: naively training machine learning algorithms could lead to overly-optimistic results](https://arxiv.org/abs/2109.08237)
+and [ISMRM 2021 abstract](https://index.mirasmart.com/ISMRM2021/PDFfiles/0222.html).
 
 ![subtle_fig_1](logo_arXiv_paper.png)
 
@@ -22,7 +27,7 @@ or
 
 ## Video
 
-A 5-min oral presentation that explains this research is [here](https://ismrm-smrt21.us3.pathable.com/meetings/virtual/t6jwNsra7cnLEAdRZ) (this link requires registration to the ISMRM-2021 conference).
+A 20-minute talk about this research is available [here](https://www.youtube.com/watch?v=sGJQqqpOwNs&t=68s) (this talk was recorded during the MRI Together 2021 conference), and a 5-min talk is [here](https://ismrm-smrt21.us3.pathable.com/meetings/virtual/t6jwNsra7cnLEAdRZ) (this link requires registration to the ISMRM'21 conference).
 
 
 ## Installation
@@ -113,4 +118,4 @@ When using our code in your future publications, please cite our paper. Thank yo
 Problems? Questions? contact efrat.s@berkeley.edu
 
 
-Efrat Shimron, UC Berkeley (2021)
+Efrat Shimron, UC Berkeley (2022)
