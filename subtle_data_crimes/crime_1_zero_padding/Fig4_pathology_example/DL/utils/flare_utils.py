@@ -1,14 +1,10 @@
 #!/usr/bin/env python
-#Borrowed from Jon Tamir Basic 
+#Borrowed from Jon Tamir Basic
+
 import numpy as np
-import sigpy.plot as pl
-from torch.autograd import Variable
 import torch
-# import complex_torch
-import progressbar
-from tqdm import tqdm
-# import torchrecon_utils as recon
 from pytorch_wavelets import DWTForward, DWTInverse
+
 def roll(im, ix,iy):  
     imx = torch.cat((im[:,-ix:,...], im[:,:-ix,...]),1)
     return torch.cat((imx[:,:,-iy:,...], imx[:,:,:-iy,...]),2)
@@ -16,23 +12,6 @@ def RMSE_im(gt,target):
     n = np.prod(gt.shape)
     return np.sqrt(np.sum((abs(gt-target)**2/n)))/np.sqrt(np.sum((abs(gt)**2/n)))
 
-#torchversion fft
-# def roll(tensor, shift, axis):
-#     if shift == 0:
-#         return tensor
-
-#     if axis < 0:
-#         axis += tensor.dim()
-
-#     dim_size = tensor.size(axis)
-#     after_start = dim_size - shift
-#     if shift < 0:
-#         after_start = -shift
-#         shift = dim_size - abs(shift)
-
-#     before = tensor.narrow(axis, 0, dim_size - shift)
-#     after = tensor.narrow(axis, after_start, shift)
-#     return torch.cat([after, before], axis)
 def torch_fftshift(im):
     t = len(im.shape)
     n = int(np.floor(im.shape[t-3]/2))

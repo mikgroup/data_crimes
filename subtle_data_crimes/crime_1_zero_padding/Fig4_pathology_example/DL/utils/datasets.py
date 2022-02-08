@@ -12,22 +12,11 @@ import torch
 
 import h5py
 from torch.utils.data import Dataset, DataLoader
-import sigpy as sp
-import matplotlib.pyplot as plt
 
 from subtle_data_crimes.crime_1_zero_padding.Fig4_pathology_example.DL.utils.subsample_fastmri import MaskFunc
 from subtle_data_crimes.crime_1_zero_padding.Fig4_pathology_example.DL.utils.subsample_var_dens import \
     MaskFuncVarDens_1D,MaskFuncVarDens_2D
 from subtle_data_crimes.crime_1_zero_padding.Fig4_pathology_example.DL.utils import complex_utils as cplx
-
-
-
-# def calc_scaling_factor(kspace):
-#     im_lowres = abs(sp.ifft(sp.resize(sp.resize(kspace, (640, 24)), (640, 372))))
-#     magnitude_vals = im_lowres.reshape(-1)
-#     k = int(round(0.05 * magnitude_vals.shape[0]))
-#     scale = magnitude_vals[magnitude_vals.argsort()[::-1][k]]
-#     return scale
 
 
 class SliceData(Dataset):
