@@ -7,7 +7,7 @@ Here's the arXiv preprint
 [Subtle data crimes: naively training machine learning algorithms could lead to overly-optimistic results](https://arxiv.org/abs/2109.08237)
 and [ISMRM 2021 abstract](https://index.mirasmart.com/ISMRM2021/PDFfiles/0222.html).
 
-![subtle_fig_1](logo_arXiv_paper.png)
+![subtle_fig_1](data_crimes_PNAS.png)
 
 ### Notice: this repo is still under construction!
 It will be finalized soon(last update: Feb 7, 2022).
