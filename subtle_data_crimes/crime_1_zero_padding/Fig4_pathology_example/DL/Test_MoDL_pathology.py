@@ -8,7 +8,7 @@ from MoDL_single import UnrolledModel
 from utils import complex_utils as cplx
 
 from subtle_data_crimes.crime_1_zero_padding.Fig4_pathology_example.DL.utils.datasets import create_data_loaders
-from subtle_data_crimes.functions import error_metrics
+from subtle_data_crimes.functions.error_funcs import error_metrics
 
 N_examples_stats = 1  # number of examples that will be used for computing the mean and STD
 print('N_examples_stats=', N_examples_stats)

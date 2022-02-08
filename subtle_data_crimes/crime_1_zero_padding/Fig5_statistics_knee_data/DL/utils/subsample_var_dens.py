@@ -6,15 +6,9 @@ Efrat Shimron, UC Berkeley (2021)
 
 """
 
-import sys
-
-
 import numpy as np
 import torch
-import matplotlib.pyplot as plt
-from subtle_data_crimes.functions import gen_1D_var_dens_mask, gen_2D_var_dens_mask , genPDF,genSampling
-import matplotlib.pyplot as plt
-
+from subtle_data_crimes.functions.sampling_funcs import gen_1D_var_dens_mask, gen_2D_var_dens_mask , genPDF,genSampling
 
 class MaskFuncVarDens_1D:
     """
