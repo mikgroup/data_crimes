@@ -41,8 +41,6 @@ kspace_orig_multicoil = kspace_orig_multicoil[:,:,::2,:] # reduce image-domain F
 ##                 Display kspace example
 #################################################################################
 
-fig = plt.figure()
-
 for n in range(num_slices):
     ksp_full_multicoil = kspace_orig_multicoil[n, :, :, :].squeeze()
 
@@ -72,16 +70,11 @@ for n in range(num_slices):
         # ksp2 = np.fft.fftshift(np.fft.fft2(mag_im))
         ksp2 = np.fft.fftshift(np.fft.fft2(np.fft.fftshift(mag_im)))  # correction for the fftshift problem. 7-Jul-2020
 
-        plt.subplot(1,3,i+1)
+        fig = plt.figure()
         plt.imshow(np.log(np.abs(ksp2)),cmap="gray")
-        plt.axis('equal')
         plt.axis('off')
-
-plt.show()
-## save as png
-# fig.savefig(fname='kspace_squashed.png')
-## save as eps
-# fig.savefig(fname='kspace_squashed.eps',forrmat = 'eps', dpi = 1000)
+        plt.show()
+        fig.savefig(fname=f'kspace_squashed_pad_{pad_ratio}.eps', forrmat='eps', dpi=1000)
 
 
 #######################################################################################################################
