@@ -2,7 +2,7 @@
 
 Code: [![DOI](https://zenodo.org/badge/367488087.svg)](https://zenodo.org/badge/latestdoi/367488087)
 
-Data: [![DOI](https://sandbox.zenodo.org/badge/DOI/10.5072/zenodo.1010046.svg)](https://doi.org/10.5072/zenodo.1010046)
+Data: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6018526.svg)](https://doi.org/10.5281/zenodo.6018526)
 
 Official github repository for the paper
 "Implicit Data Crimes: Machine Learning Bias Arising from Misuse of Public Data". The paper has been accepted to PNAS (Feb 2022) and will be published soon with full open access.
@@ -85,9 +85,9 @@ were used in our pathology experiments. However, there's no need to place them i
 
 ## Pre-trained networks
 
-The weights of our pre-trained networks are publicly available on [Zenodo](https://zenodo.org/). Please search for "data_crimes" to find them.
+The weights of our pre-trained networks are publicly available on [Zenodo](https://zenodo.org/record/6018526#.YgNbWPXMJqs).
 
-The DOI is: [![DOI](https://sandbox.zenodo.org/badge/DOI/10.5072/zenodo.1010046.svg)](https://doi.org/10.5072/zenodo.1010046)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6018526.svg)](https://doi.org/10.5281/zenodo.6018526)
 
 ## Acknowledgements
 
