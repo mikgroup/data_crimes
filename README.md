@@ -1,5 +1,7 @@
 # Data Crimes
 
+[![DOI](https://zenodo.org/badge/367488087.svg)](https://zenodo.org/badge/latestdoi/367488087)
+
 Official github repository for the paper
 "Implicit Data Crimes: Machine Learning Bias Arising from Misuse of Public Data". The paper has been accepted to PNAS (Feb 2022) and will be published soon with full open access.
 
