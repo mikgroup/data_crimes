@@ -3,14 +3,11 @@
 Official github repository for the paper
 "Implicit Data Crimes: Machine Learning Bias Arising from Misuse of Public Data". The paper has been accepted to PNAS (Feb 2022) and will be published soon with full open access.
 
-Here's the arXiv preprint
-[Subtle data crimes: naively training machine learning algorithms could lead to overly-optimistic results](https://arxiv.org/abs/2109.08237)
-and [ISMRM 2021 abstract](https://index.mirasmart.com/ISMRM2021/PDFfiles/0222.html).
+Here are our arXiv preprint
+[Subtle data crimes: naively training machine learning algorithms could lead to overly-optimistic results](https://arxiv.org/abs/2109.08237) and [ISMRM'21 abstract](https://index.mirasmart.com/ISMRM2021/PDFfiles/0222.html).
 
-![subtle_fig_1](data_crimes_logo.png)
+![fig_1](README_fig.png)
 
-### Notice: this repo is still under construction!
-It will be finalized soon(last update: Feb 7, 2022).
 
 ### Notice: repository name change
 The repository's name recently changed from "subtle_data_crimes" to "data_crimes".
@@ -84,13 +81,11 @@ were used in our pathology experiments. However, there's no need to place them i
 
 ## Pre-trained networks
 
-The weights of our pre-trained networks will soon be publicly available here:
-https://berkeley.box.com/s/lamdqhruiwxuxtwwjiv8xly5mohshot9
-
+The weights of our pre-trained networks are publicly available on [Zenodo](https://zenodo.org/). Please search for "data_crimes" to find them.
 
 ## Acknowledgements
 
-The Compressed Sensing code implemented was based on [Sigpy](https://sigpy.readthedocs.io/en/latest/index.html).
+The Compressed Sensing implementation was based on [Sigpy](https://sigpy.readthedocs.io/en/latest/index.html).
 
 The Dictionary Learning algorithm implementation is based on Jon Tamir's [ISMRM 2020 educational tutorial](https://github.com/utcsilab/dictionary_learning_ismrm_2020).
 
