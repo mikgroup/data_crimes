@@ -1,6 +1,8 @@
 # Data Crimes
 
-[![DOI](https://zenodo.org/badge/367488087.svg)](https://zenodo.org/badge/latestdoi/367488087)
+Code: [![DOI](https://zenodo.org/badge/367488087.svg)](https://zenodo.org/badge/latestdoi/367488087)
+
+Data: [![DOI](https://sandbox.zenodo.org/badge/DOI/10.5072/zenodo.1010046.svg)](https://doi.org/10.5072/zenodo.1010046)
 
 Official github repository for the paper
 "Implicit Data Crimes: Machine Learning Bias Arising from Misuse of Public Data". The paper has been accepted to PNAS (Feb 2022) and will be published soon with full open access.
@@ -85,6 +87,8 @@ were used in our pathology experiments. However, there's no need to place them i
 
 The weights of our pre-trained networks are publicly available on [Zenodo](https://zenodo.org/). Please search for "data_crimes" to find them.
 
+The DOI is: [![DOI](https://sandbox.zenodo.org/badge/DOI/10.5072/zenodo.1010046.svg)](https://doi.org/10.5072/zenodo.1010046)
+
 ## Acknowledgements
 
 The Compressed Sensing implementation was based on [Sigpy](https://sigpy.readthedocs.io/en/latest/index.html).
@@ -98,6 +102,7 @@ The authors acknowledge funding from grants U24 EB029240-01, R01EB009690, R01HL1
 This repository is published under the MIT license. It may be used only for research/educational purpose. It may not be used for clinical diagnosis or any other clinical purpose.
 
 ## Citation
+
 
 When using our code in your future publications, please cite our paper. Thank you.
 
