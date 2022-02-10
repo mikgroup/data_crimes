@@ -129,10 +129,11 @@ for method_i in range(N_methods):
     plt.xticks(fontsize=20)
     if method_i==2:
         ax.legend(fontsize=20,loc='upper right')
-    #ax.grid('on')
+
+    plt.tight_layout()
     plt.show()
     figname_NRMSE = figs_path + f'/{method_str}_NRMSE_stats'
-    fig.savefig(fname=figname_NRMSE)
+    fig.savefig(fname=figname_NRMSE, dpi=1200)
 
 
     ############################################################################
@@ -179,8 +180,10 @@ for method_i in range(N_methods):
     ax.set_yticks((0.85, 0.9, 0.95))
     if method_i == 2:
         ax.legend(fontsize=20, loc='lower right')
+
+    plt.tight_layout()
     plt.show()
 
     figname_SSIM = figs_path + f'/{method_str}_SSIM_stats'
-    fig.savefig(fname=figname_SSIM)
+    fig.savefig(fname=figname_SSIM, dpi=1200)
 

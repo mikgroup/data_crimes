@@ -87,15 +87,17 @@ for j, poly_degree in enumerate(poly_degree_vec):
     styl=styl_list[j]
     plt.plot(pad_ratio_vec, 100*1/R_eff_vs_pad_and_poly_av[j, :], marker='o', markersize=7.50, label=label, linewidth=2,color=mycolor[j])
 
-    plt.text(3.15,97*(1/R_eff_vs_pad_and_poly_av[j,-1]),label,fontsize=18)
-plt.xlabel('zero padding',fontsize=18)
+    plt.text(3.15,97*(1/R_eff_vs_pad_and_poly_av[j,-1]),label,fontsize=14,fontname="Times New Roman")
+plt.xlabel('zero padding',fontsize=14,fontname="Times New Roman")
 plt.ylim((0,65))
 plt.xlim((0.8,4.6))
 ax = plt.gca()
 ax.set_xticks(x)
 ax.set_yticks(y_ticks)
-ax.set_xticklabels(x_ticks_labels, fontsize=18)
-ax.set_yticklabels(y_ticks_labels, fontsize=18)
+ax.set_xticklabels(x_ticks_labels, fontsize=14,fontname="Times New Roman")
+ax.set_yticklabels(y_ticks_labels, fontsize=14,fontname="Times New Roman")
 plt.show()
-fig.savefig('Eff_samp_vs_pad_4paper'.format(R))
+# fig.savefig('Eff_samp_vs_pad_4paper'.format(R)) # png figure
+fig.savefig(fname=f'Eff_samp_vs_pad_4paper.eps', forrmat='eps', dpi=1000)
+
 

@@ -192,9 +192,10 @@ for method_i in range(N_methods):
         ax.legend(fontsize=15,loc='upper right')
     #ax.grid('on')d
     plt.title(f'{method_str} - {var_dens_flag} VD {N_examples} examples')
+    plt.tight_layout()
     plt.show()
     figname_NRMSE = figs_path + f'/{method_str}_NRMSE_stats'
-    fig.savefig(fname=figname_NRMSE)
+    fig.savefig(fname=figname_NRMSE, dpi=1200)
 
 
     ############################################################################
@@ -255,9 +256,11 @@ for method_i in range(N_methods):
 
     if method_i == N_methods:
         ax.legend(fontsize=15, loc='lower right')
+
+    plt.tight_layout()
     plt.show()
 
     figname_SSIM = figs_path + f'/{method_str}_SSIM_stats'
-    fig.savefig(fname=figname_SSIM)
+    fig.savefig(fname=figname_SSIM, dpi=1200)
 
 
